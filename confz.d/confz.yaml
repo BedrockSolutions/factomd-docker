@@ -1,0 +1,24 @@
+defaultValues:
+  - /home/app/defaults.js
+values:
+  - /home/app/values
+valuesSchema:
+  additionalProperties: false
+  properties:
+    network:
+      type: string
+      enum:
+        - CUSTOM
+        - LOCAL
+        - MAIN
+        - TEST
+    profile:
+      type: string
+      enum:
+        - mainnet
+        - testnet
+
+  required:
+    - network
+  type: object
+
