@@ -1,10 +1,41 @@
 defaultValues:
-  - /home/app/defaults.js
+  - /home/app/confz.d/defaults.js
 values:
   - /home/app/values
 valuesSchema:
   additionalProperties: false
   properties:
+    apiPort:
+      type: integer
+      minimum: 1
+      maximum: 65535
+    bootstrapIdentity:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    bootstrapKey:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    controlPanelSetting:
+      type: string
+      enum:
+        - disabled
+        - readonly
+        - readwrite
+    controlPanelPort:
+      type: integer
+      minimum: 1
+      maximum: 65535
+    customNet:
+      type: string
+    exchangeRateAuthorityPublicKey:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    faultTimeout:
+      type: integer
+      minimum: 0
+    identityChainID:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
     network:
       type: string
       enum:
@@ -12,13 +43,31 @@ valuesSchema:
         - LOCAL
         - MAIN
         - TEST
+    networkPort:
+      type: integer
+      minimum: 1
+      maximum: 65535
     profile:
       type: string
       enum:
         - mainnet
         - testnet
-
-  required:
-    - network
+    seedUrl:
+      type: string
+      format: uri
+    specialPeers:
+      type: array
+      items:
+        type: string
+        format: uri-reference
+    startDelay:
+      type: integer
+      minimum: 0
+    tlsEnabled:
+      type: boolean
+    tlsPrivateKey:
+      type: string
+    tlsPublicCert:
+      type: string
   type: object
 

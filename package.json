@@ -1,0 +1,15 @@
+{
+  "name": "factomd-docker",
+  "description": "Cloud native factomd docker image",
+  "repository": "https://github.com/BedrockSolutions/factomd-docker",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "build": "docker build -t factomd:latest -t bedrocksolutions/factomd:latest .",
+    "exec": "docker run -v /Users/jay/code/factomd-docker/testing/values:/home/app/values bedrocksolutions/factomd:latest",
+    "shell": "docker run -it -v /Users/jay/code/factomd-docker/testing/values:/home/app/values --entrypoint /bin/sh bedrocksolutions/factomd:latest",
+    "push": "docker push bedrocksolutions/factomd:latest"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11"
+  }
+}
