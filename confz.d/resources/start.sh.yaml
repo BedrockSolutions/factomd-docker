@@ -1,0 +1,3 @@
+src: start.sh.njk
+dest: ./start.sh
+mode: 755

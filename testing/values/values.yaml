@@ -1,4 +1,18 @@
-profile: testnet
+networkProfile: mainnet
+
+roleProfile: authority
+
+apiUser: bill
+
+apiPassword: 39dksksdk
+
+broadcastNum: 50
+
+changeAcksHeight: 500000
+
+corsDomains:
+  - foo.com
+  - bar.org
 
 tlsEnabled: true
 

@@ -1,16 +1,23 @@
 const {capitalize, flow, isArray, isString, join, toLower, upperFirst} = require('lodash/fp')
 
+const DEFAULT_ARG_NAME = toLower
+
+const DEFAULT_OPT_NAME = upperFirst
+
+const SQUELCHED_KEYS = ['networkProfile', 'roleProfile']
+
+const factomdPrefixOptName = (_, key) => `Factomd${upperFirst(key)}`
 const networkPrefixOptName = ({network}, key) => `${capitalize(network)}${upperFirst(key)}`
-
-const defaultArgName = toLower
-
-const defaultOptName = upperFirst
-
-const SQUELCHED_KEYS = ['profile']
 
 const overrides = {
   apiPort: {
     name: 'PortNumber'
+  },
+  apiPassword: {
+    name: 'FactomdRpcPass'
+  },
+  apiUser: {
+    name: 'FactomdRpcUser'
   },
   bootstrapIdentity: {
     name: networkPrefixOptName,
@@ -18,14 +25,29 @@ const overrides = {
   broadcastNum: {
     arg: true,
   },
+  corsDomains: {
+    joinToken: ', '
+  },
   customNet: {
+    arg: true
+  },
+  exclusive: {
+    arg: true
+  },
+  exclusiveIn: {
     arg: true
   },
   faultTimeout: {
     arg: true,
   },
+  identityChainId: {
+    name: 'IdentityChainID'
+  },
   networkPort: {
     name: networkPrefixOptName,
+  },
+  nodeName: {
+    arg: true
   },
   seedUrl: {
     name: networkPrefixOptName,
@@ -36,11 +58,16 @@ const overrides = {
   startDelay: {
     arg: true
   },
+  tlsEnabled: {
+    name: factomdPrefixOptName,
+  },
   tlsPrivateKey: {
-    value: '/home/app/tls/private.key'
+    name: factomdPrefixOptName,
+    value: '/app/tls/private.key'
   },
   tlsPublicCert: {
-    value: '/home/app/tls/public.cert'
+    name: factomdPrefixOptName,
+    value: '/app/tls/public.cert'
   }
 }
 
@@ -57,11 +84,11 @@ const getName = (values, key) => {
     if (name) {
       return isString(name) ? name : name(values, key)
     } else if (arg) {
-      return defaultArgName(key)
+      return DEFAULT_ARG_NAME(key)
     }
   }
 
-  return defaultOptName(key)
+  return DEFAULT_OPT_NAME(key)
 }
 
 const getValue = (values, key) => {
@@ -70,7 +97,7 @@ const getValue = (values, key) => {
   const value = overrideValue || values[key]
 
   if (isArray(value)) {
-    return `"${join(' ', value)}"`
+    return `"${join(overrides[key] && overrides[key].joinToken || ' ', value)}"`
   } else if (isString(value)) {
     return `"${value}"`
   } else {

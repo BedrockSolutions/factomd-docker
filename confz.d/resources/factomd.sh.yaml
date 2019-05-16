@@ -1,3 +1,0 @@
-src: factomd.sh.njk
-dest: ./factomd.sh
-mode: 755

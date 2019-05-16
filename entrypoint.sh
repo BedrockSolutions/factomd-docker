@@ -1,9 +1,19 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 set -xe
 
-./bin/confz --noreload --onetime
+case ${1} in
+  start)
+    ./bin/confz --noreload --onetime
+    ./bin/confz --skipinitial&
+    exec ./start.sh
+    ;;
 
-./bin/confz&
+  shell)
+    exec /bin/bash
+    ;;
 
-exec "$@"
+  *)
+    exec "$@"
+    ;;
+esac

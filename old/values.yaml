@@ -22,7 +22,7 @@ factomd:
   #   controlPanelPortSetting
   #   directoryBlockInSeconds
   #   exchangeRateAuthorityPublicKey
-  #   identityChainID
+  #   identityChainId
   #   localServerPublicKey
   #   network
   #   seedUrl
@@ -84,7 +84,7 @@ factomd:
       global:
         changeAcksHeight: 0
         controlPanelSetting: readonly
-        identityChainID: FA1E000000000000000000000000000000000000000000000000000000000000
+        identityChainId: FA1E000000000000000000000000000000000000000000000000000000000000
         localServerPrivateKey: '${LOCAL_SERVER_PRIVATE_KEY}'
       mainnet:
         specialPeers: '"52.17.183.121:8108 52.17.153.126:8108 52.19.117.149:8108 52.18.72.212:8108"'
@@ -103,7 +103,7 @@ factomd:
         controlPanelSetting: ControlPanelSetting
         directoryBlockInSeconds: DirectoryBlockInSeconds
         exchangeRateAuthorityPublicKey: ExchangeRateAuthorityPublicKey
-        identityChainID: IdentityChainID
+        identityChainId: IdentityChainID
         localServerPrivateKey: LocalServerPrivKey
         localServerPublicKey: LocalServerPublicKey
         network: Network
