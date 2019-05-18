@@ -11,8 +11,8 @@ broadcastNum: 50
 changeAcksHeight: 500000
 
 corsDomains:
+  - '*'
   - foo.com
-  - bar.org
 
 tlsEnabled: true
 

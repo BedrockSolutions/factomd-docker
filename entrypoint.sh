@@ -4,13 +4,21 @@ set -xe
 
 case ${1} in
   start)
-    ./bin/confz --noreload --onetime
-    ./bin/confz --skipinitial&
+    ./bin/confz run
+    ./bin/confz watch &
     exec ./start.sh
+    ;;
+
+  schema)
+    exec ./bin/confz schema --print-stack
     ;;
 
   shell)
     exec /bin/bash
+    ;;
+
+  validate)
+    exec ./bin/confz run
     ;;
 
   *)
