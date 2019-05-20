@@ -11,13 +11,13 @@ const networkPrefixOptName = ({network}, key) => `${capitalize(network)}${upperF
 
 const overrides = {
   apiPort: {
-    name: 'PortNumber'
+    name: 'PortNumber',
   },
   apiPassword: {
-    name: 'FactomdRpcPass'
+    name: 'FactomdRpcPass',
   },
   apiUser: {
-    name: 'FactomdRpcUser'
+    name: 'FactomdRpcUser',
   },
   bootstrapIdentity: {
     name: networkPrefixOptName,
@@ -26,7 +26,7 @@ const overrides = {
     arg: true,
   },
   corsDomains: {
-    joinToken: ', '
+    joinToken: ', ',
   },
   customNet: {
     arg: true
@@ -41,16 +41,25 @@ const overrides = {
     arg: true,
   },
   identityChainId: {
-    name: 'IdentityChainID'
+    name: 'IdentityChainID',
+  },
+  network: {
+    unquotedString: true,
   },
   networkPort: {
     name: networkPrefixOptName,
   },
+  networkProfile: {
+    squelched: true,
+  },
   nodeName: {
     arg: true
   },
+  roleProfile: {
+    squelched: true,
+  },
   seedUrl: {
-    name: networkPrefixOptName,
+    name: ({network}, key) => `${capitalize(network)}SeedURL`,
   },
   specialPeers: {
     name: networkPrefixOptName,
@@ -63,17 +72,17 @@ const overrides = {
   },
   tlsPrivateKey: {
     name: factomdPrefixOptName,
-    value: '/app/tls/private.key'
+    value: '/app/tls/private_key.pem',
   },
   tlsPublicCert: {
     name: factomdPrefixOptName,
-    value: '/app/tls/public.cert'
+    value: '/app/tls/public_cert.pem',
   }
 }
 
-const isArg = (values, key) => !SQUELCHED_KEYS.includes(key) && !!(overrides[key] && overrides[key].arg)
+const isArg = (values, key) => overrides[key] && !overrides[key].squelched && overrides[key].arg
 
-const isOpt = (values, key) => !SQUELCHED_KEYS.includes(key) && !(overrides[key] && overrides[key].arg)
+const isOpt = (values, key) => !overrides[key] || (!overrides[key].squelched && !overrides[key].arg)
 
 const getName = (values, key) => {
   const override = overrides[key]

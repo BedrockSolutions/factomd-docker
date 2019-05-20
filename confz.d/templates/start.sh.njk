@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-set -xe
-
 exec ./bin/factomd -config=/app/factomd.conf{% for key, value in this %}{% if this | isArg(key) %} -{{ this | getName(key) }}={{ this | getValue(key) }}{% endif %}{% endfor %}

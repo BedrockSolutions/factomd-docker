@@ -1,3 +1,0 @@
-src: tls_public.cert.njk
-dest: ./tls/public.cert
-mode: 644

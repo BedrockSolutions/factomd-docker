@@ -9,16 +9,20 @@ case ${1} in
     exec ./start.sh
     ;;
 
+  config)
+    exec ./bin/confz display output
+    ;;
+
   schema)
-    exec ./bin/confz schema --print-stack
+    exec ./bin/confz display schema
     ;;
 
   shell)
     exec /bin/bash
     ;;
 
-  validate)
-    exec ./bin/confz run
+  values)
+    exec ./bin/confz display values
     ;;
 
   *)

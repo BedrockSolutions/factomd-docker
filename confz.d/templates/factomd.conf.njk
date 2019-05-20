@@ -1,6 +1,6 @@
 [app]
-{% for key, value in this -%}
-{%- if this | isOpt(key) -%}
-{{ this | getName(key) }} = {{ this | getValue(key) }}
-{% endif -%}
-{%- endfor %}
+{%- for key, value in this -%}
+{%- if this | isOpt(key) %}
+{{ this | getName(key) }} = {{ this | getValue(key) -}}
+{%- endif -%}
+{%- endfor -%}
