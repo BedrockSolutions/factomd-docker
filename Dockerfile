@@ -1,6 +1,6 @@
 FROM bedrocksolutions/confz:latest as confz
 
-FROM factominc/factomd:v6.2.2-alpine AS factomd
+FROM factominc/factomd:v6.2.0-alpine AS factomd
 
 FROM node:10-alpine AS node_modules
 
@@ -15,11 +15,9 @@ FROM alpine:latest
 WORKDIR /app
 
 RUN set -xe && \
-  apk add --no-cache bash libstdc++ && \
-  addgroup -g 65530 -S app && \
-  adduser -u 65530 -h /app -G app -S app && \
-  mkdir ./.factom ./bin ./database ./tls ./values && \
-  ln -s ../database ./.factom/m2
+  apk add --no-cache bash ca-certificates libstdc++ && \
+  mkdir /.factom ./bin ./database ./tls ./values && \
+  ln -s /app/database /.factom/m2
 
 COPY --from=factomd /go/bin/factomd ./bin
 COPY --from=node_modules /home/node/node_modules ./node_modules/
@@ -28,13 +26,13 @@ COPY --from=confz /app/confz-alpine ./bin/confz
 COPY ./confz.d ./confz.d/
 COPY ./entrypoint.sh .
 
-RUN chown -R app:app .
+RUN chown -R nobody:nobody /app /.factom
 
 VOLUME /app/database
 
 VOLUME /app/values
 
-USER app:app
+USER nobody:nobody
 
 ENTRYPOINT ["./entrypoint.sh"]
 

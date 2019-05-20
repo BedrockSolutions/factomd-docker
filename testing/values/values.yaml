@@ -1,11 +1,13 @@
-networkProfile: mainnet
+networkProfile: testnet
 
 roleProfile: follower
 
-nodeName: confz
+#logLevel: debug
 
-#tlsEnabled: true
-#
+#nodeName: confz
+
+tlsEnabled: false
+
 #tlsPrivateKey: |-
 #  -----BEGIN PRIVATE KEY-----
 #  MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgk9yGodRUmk7SOrQv

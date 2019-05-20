@@ -7,12 +7,6 @@ const GLOBAL_DEFAULTS = {
 const NETWORK_PROFILES = {
   mainnet: {
     network: 'MAIN',
-    specialPeers: [
-      '52.17.183.121:8108',
-      '52.17.153.126:8108',
-      '52.19.117.149:8108',
-      '52.18.72.212:8108',
-    ],
   },
   testnet: {
     bootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',

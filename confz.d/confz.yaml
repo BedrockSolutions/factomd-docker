@@ -33,16 +33,6 @@ valuesSchema:
       - tlsPublicCert
     tlsPublicCert:
       - tlsPrivateKey
-  allOf:
-    - if:
-        properties:
-          tlsEnabled:
-            const: true
-      then:
-        dependencies:
-          tlsEnabled:
-            - tlsPrivateKey
-            - tlsPublicCert
   properties:
     apiPassword:
       type: string
@@ -105,6 +95,16 @@ valuesSchema:
       $ref: '#/definitions/base64Id'
     localServerPublicKey:
       $ref: '#/definitions/base64Id'
+    logLevel:
+      type: string
+      enum:
+        - none
+        - debug
+        - info
+        - warning
+        - error
+        - fatal
+        - panic
     network:
       type: string
       enum:

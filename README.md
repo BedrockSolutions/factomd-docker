@@ -1,4 +1,5 @@
-# Factomd
+# factomd-docker
+
 
 Extension of the base factomd image. Features: 
 

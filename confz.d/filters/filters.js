@@ -43,6 +43,10 @@ const overrides = {
   identityChainId: {
     name: 'IdentityChainID',
   },
+  logLevel: {
+    arg: true,
+    name: 'loglvl',
+  },
   network: {
     unquotedString: true,
   },
