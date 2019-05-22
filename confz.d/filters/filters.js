@@ -4,8 +4,6 @@ const DEFAULT_ARG_NAME = toLower
 
 const DEFAULT_OPT_NAME = upperFirst
 
-const SQUELCHED_KEYS = ['networkProfile', 'roleProfile']
-
 const factomdPrefixOptName = (_, key) => `Factomd${upperFirst(key)}`
 const networkPrefixOptName = ({network}, key) => `${capitalize(network)}${upperFirst(key)}`
 
@@ -20,6 +18,9 @@ const overrides = {
     name: 'FactomdRpcUser',
   },
   bootstrapIdentity: {
+    name: networkPrefixOptName,
+  },
+  bootstrapKey: {
     name: networkPrefixOptName,
   },
   broadcastNum: {
@@ -84,9 +85,15 @@ const overrides = {
   }
 }
 
-const isArg = (values, key) => overrides[key] && !overrides[key].squelched && overrides[key].arg
+const isArg = (values, key) => {
+  const {arg = false, squelched = false} = overrides[key] || {}
+  return arg && !squelched
+}
 
-const isOpt = (values, key) => !overrides[key] || (!overrides[key].squelched && !overrides[key].arg)
+const isOpt = (values, key) => {
+  const {arg = false, squelched = false} = overrides[key] || {}
+  return !arg && !squelched
+}
 
 const getName = (values, key) => {
   const override = overrides[key]
@@ -105,13 +112,18 @@ const getName = (values, key) => {
 }
 
 const getValue = (values, key) => {
-  const overrideValue = overrides[key] && overrides[key].value
+  const {
+    arg = false,
+    joinToken = ' ',
+    unquotedString = false ,
+    value: overrideValue
+  } = overrides[key] || {}
 
   const value = overrideValue || values[key]
 
   if (isArray(value)) {
-    return `"${join(overrides[key] && overrides[key].joinToken || ' ', value)}"`
-  } else if (isString(value)) {
+    return `"${join(joinToken, value)}"`
+  } else if (isString(value) && !arg && !unquotedString ) {
     return `"${value}"`
   } else {
     return `${value}`

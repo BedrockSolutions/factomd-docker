@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /app
 
 RUN set -xe && \
-  apk add --no-cache bash ca-certificates libstdc++ && \
+  apk add --no-cache bash ca-certificates curl git libstdc++ && \
   mkdir /.factom ./bin ./database ./tls ./values && \
   ln -s /app/database /.factom/m2
 
@@ -28,12 +28,14 @@ COPY ./entrypoint.sh .
 
 RUN chown -R nobody:nobody /app /.factom
 
-VOLUME /app/database
-
-VOLUME /app/values
-
-USER nobody:nobody
+#USER nobody:nobody
 
 ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["start"]
+
+VOLUME /app/database
+
+VOLUME /app/values
+
+EXPOSE 8088 8090 8108 8109 8110
