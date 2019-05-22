@@ -1,4 +1,4 @@
-const {capitalize, flow, isArray, isString, join, toLower, upperFirst} = require('lodash/fp')
+const {capitalize, flow, isArray, isFunction, isString, join, toLower, toUpper, upperFirst} = require('lodash/fp')
 
 const DEFAULT_ARG_NAME = toLower
 
@@ -49,6 +49,7 @@ const overrides = {
     name: 'loglvl',
   },
   network: {
+    value: toUpper,
     unquotedString: true,
   },
   networkPort: {
@@ -96,30 +97,29 @@ const isOpt = (values, key) => {
 }
 
 const getName = (values, key) => {
-  const override = overrides[key]
+  const {arg = false, name} = overrides[key] || {}
 
-  if (override) {
-    const {arg, name} = override
-
-    if (name) {
-      return isString(name) ? name : name(values, key)
-    } else if (arg) {
-      return DEFAULT_ARG_NAME(key)
-    }
+  if (name) {
+    return isFunction(name) ? name(values, key) : name
+  } else {
+    return (arg ? DEFAULT_ARG_NAME : DEFAULT_OPT_NAME)(key)
   }
-
-  return DEFAULT_OPT_NAME(key)
 }
 
 const getValue = (values, key) => {
   const {
     arg = false,
     joinToken = ' ',
-    unquotedString = false ,
+    unquotedString = false,
     value: overrideValue
   } = overrides[key] || {}
 
-  const value = overrideValue || values[key]
+  let value
+  if (overrideValue) {
+    value = isFunction(overrideValue) ? overrideValue(values[key], key) : overrideValue
+  } else {
+    value = values[key]
+  }
 
   if (isArray(value)) {
     return `"${join(joinToken, value)}"`

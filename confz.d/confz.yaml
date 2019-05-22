@@ -108,10 +108,10 @@ valuesSchema:
     network:
       type: string
       enum:
-        - CUSTOM
-        - LOCAL
-        - MAIN
-        - TEST
+        - custom
+        - local
+        - main
+        - test
     networkPort:
       $ref: '#/definitions/tcpPort'
     networkProfile:

@@ -28,7 +28,7 @@ COPY ./entrypoint.sh .
 
 RUN chown -R nobody:nobody /app /.factom
 
-#USER nobody:nobody
+USER nobody:nobody
 
 ENTRYPOINT ["./entrypoint.sh"]
 

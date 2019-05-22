@@ -6,7 +6,7 @@ roleProfile: follower
 
 #nodeName: confz
 
-tlsEnabled: true
+tlsEnabled: false
 
 tlsPrivateKey: |-
   -----BEGIN RSA PRIVATE KEY-----

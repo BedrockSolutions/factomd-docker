@@ -1,5 +1,26 @@
 # factomd-docker
 
+This is a Docker image containing the Factom Protocol daemon.
+
+**Features:**
+
+  * Simple, YAML-based configuration
+  * Rigorous JSON Schema validation
+  * Kubernetes-ready
+  * Runs as non-root user
+
+## The Basics
+
+### Volumes
+
+The container expects two volumes to be mounted at startup:
+
+#### `/app/database`
+  * A folder containing either 1) an existing Factom blockchain,
+   or 2) nothing.
+   
+#### `/app/values`
+  * A folder containing one or more YAML configuration files.
 
 Extension of the base factomd image. Features: 
 

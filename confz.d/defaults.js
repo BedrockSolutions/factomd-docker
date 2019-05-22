@@ -6,7 +6,7 @@ const GLOBAL_DEFAULTS = {
 
 const NETWORK_PROFILES = {
   mainnet: {
-    network: 'MAIN',
+    network: 'main',
   },
   testnet: {
     bootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
@@ -14,7 +14,7 @@ const NETWORK_PROFILES = {
     customNet: 'fct_community_test',
     directoryBlockInSeconds: 600,
     exchangeRateAuthorityPublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
-    network: 'CUSTOM',
+    network: 'custom',
     networkPort: 8110,
     seedUrl: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
   },
