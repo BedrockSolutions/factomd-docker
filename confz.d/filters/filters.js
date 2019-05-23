@@ -17,8 +17,14 @@ const overrides = {
   apiUser: {
     name: 'FactomdRpcUser',
   },
+  brainSwapHeight: {
+    name: 'ChangeAcksHeight',
+  },
   broadcastNum: {
     arg: true,
+  },
+  controlPanelMode: {
+    name: 'ControlPanelSetting'
   },
   corsDomains: {
     joinToken: ', ',
@@ -61,6 +67,9 @@ const overrides = {
   },
   nodeName: {
     arg: true
+  },
+  p2pBroadcastNumber: {
+    name: 'broadcastnum'
   },
   roleProfile: {
     squelched: true,

@@ -43,10 +43,7 @@ valuesSchema:
     apiUser:
       type: string
       description: User name for API port basic authentication
-    broadcastNum:
-      type: integer
-      minimum: 1
-    changeAcksHeight:
+    brainSwapHeight:
       type: integer
       minimum: 0
     controlPanelSetting:
@@ -148,6 +145,9 @@ valuesSchema:
         - testnet
     nodeName:
       type: string
+    p2pBroadcastNumber:
+      type: integer
+      minimum: 1
     roleProfile:
       type: string
       enum:
