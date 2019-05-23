@@ -16,7 +16,7 @@ WORKDIR /app
 
 RUN set -xe && \
   apk add --no-cache bash ca-certificates curl git libstdc++ && \
-  mkdir /.factom ./bin ./database ./tls ./values && \
+  mkdir /.factom ./bin ./config ./database ./tls && \
   ln -s /app/database /.factom/m2
 
 COPY --from=factomd /go/bin/factomd ./bin
@@ -34,8 +34,8 @@ ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["start"]
 
-VOLUME /app/database
+VOLUME /app/config
 
-VOLUME /app/values
+VOLUME /app/database
 
 EXPOSE 8088 8090 8108 8109 8110

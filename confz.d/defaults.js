@@ -9,14 +9,14 @@ const NETWORK_PROFILES = {
     network: 'main',
   },
   testnet: {
-    bootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
-    bootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
-    customNet: 'fct_community_test',
+    customBootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
+    customBootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
+    customNetworkId: 'fct_community_test',
+    customNetworkPort: 8110,
+    customSeedUrl: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
     directoryBlockInSeconds: 600,
     exchangeRateAuthorityPublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
     network: 'custom',
-    networkPort: 8110,
-    seedUrl: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
   },
 }
 
@@ -32,7 +32,7 @@ const ROLE_PROFILES = {
 const NETWORK_ROLE_PROFILES = {
   mainnet: {
     authority: {
-      specialPeers: [
+      mainSpecialPeers: [
         '52.17.183.121:8108',
         '52.17.153.126:8108',
         '52.19.117.149:8108',

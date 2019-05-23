@@ -1,11 +1,11 @@
-const {capitalize, flow, isArray, isFunction, isString, join, toLower, toUpper, upperFirst} = require('lodash/fp')
+const {capitalize, flow, isArray, isFunction, isString, join, replace, toLower, toUpper, upperFirst} = require('lodash/fp')
 
 const DEFAULT_ARG_NAME = toLower
 
 const DEFAULT_OPT_NAME = upperFirst
 
 const factomdPrefixOptName = (_, key) => `Factomd${upperFirst(key)}`
-const networkPrefixOptName = ({network}, key) => `${capitalize(network)}${upperFirst(key)}`
+const capitalizeUrlOptName = (_, key) => `${upperFirst(replace('Url', 'URL', key))}`
 
 const overrides = {
   apiPort: {
@@ -17,20 +17,18 @@ const overrides = {
   apiUser: {
     name: 'FactomdRpcUser',
   },
-  bootstrapIdentity: {
-    name: networkPrefixOptName,
-  },
-  bootstrapKey: {
-    name: networkPrefixOptName,
-  },
   broadcastNum: {
     arg: true,
   },
   corsDomains: {
     joinToken: ', ',
   },
-  customNet: {
-    arg: true
+  customNetworkId: {
+    arg: true,
+    name: 'customnet'
+  },
+  customSeedUrl: {
+    name: capitalizeUrlOptName,
   },
   exclusive: {
     arg: true
@@ -44,16 +42,19 @@ const overrides = {
   identityChainId: {
     name: 'IdentityChainID',
   },
+  localSeedUrl: {
+    name: capitalizeUrlOptName,
+  },
   logLevel: {
     arg: true,
     name: 'loglvl',
   },
+  mainSeedUrl: {
+    name: capitalizeUrlOptName,
+  },
   network: {
     value: toUpper,
     unquotedString: true,
-  },
-  networkPort: {
-    name: networkPrefixOptName,
   },
   networkProfile: {
     squelched: true,
@@ -64,14 +65,11 @@ const overrides = {
   roleProfile: {
     squelched: true,
   },
-  seedUrl: {
-    name: ({network}, key) => `${capitalize(network)}SeedURL`,
-  },
-  specialPeers: {
-    name: networkPrefixOptName,
-  },
   startDelay: {
     arg: true
+  },
+  testSeedUrl: {
+    name: capitalizeUrlOptName,
   },
   tlsEnabled: {
     name: factomdPrefixOptName,

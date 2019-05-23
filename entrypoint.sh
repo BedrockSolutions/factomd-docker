@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -xe
+set -e
 
 case ${1} in
   start)
@@ -10,19 +10,35 @@ case ${1} in
     ;;
 
   config)
+    exec ./bin/confz display values
+    ;;
+
+  files)
     exec ./bin/confz display output
     ;;
+
+  help)
+    echo "
+  Usage: docker run [options] bedrocksolutions/factomd:<tag> [command]
+
+  Available commands:
+
+    start: Process config files and start factomd. This is the default.
+    config: Display the merged YAML configuration.
+    files: Display the generated start script, factomd.conf, etc.
+    help: Display this message.
+    schema: Display the JSON schema that validates the YAML config files.
+    shell: Get a bash shell into the container.
+"
+      ;;
 
   schema)
     exec ./bin/confz display schema
     ;;
 
   shell)
+    ./bin/confz run
     exec /bin/bash
-    ;;
-
-  values)
-    exec ./bin/confz display values
     ;;
 
   *)

@@ -1,7 +1,7 @@
 defaultValues:
   - ./confz.d/defaults.js
 values:
-  - ./values
+  - ./config
 valuesSchema:
   additionalProperties: false
   definitions:
@@ -23,12 +23,12 @@ valuesSchema:
       - apiUser
     apiUser:
       - apiPassword
-    localServerPrivateKey:
+    serverPrivateKey:
       - identityChainId
-      - localServerPublicKey
-    localServerPublicKey:
+      - serverPublicKey
+    serverPublicKey:
       - identityChainId
-      - localServerPrivateKey
+      - serverPrivateKey
     tlsPrivateKey:
       - tlsPublicCert
     tlsPublicCert:
@@ -43,10 +43,6 @@ valuesSchema:
     apiUser:
       type: string
       description: User name for API port basic authentication
-    bootstrapIdentity:
-      $ref: '#/definitions/base64Id'
-    bootstrapKey:
-      $ref: '#/definitions/base64Id'
     broadcastNum:
       type: integer
       minimum: 1
@@ -73,8 +69,23 @@ valuesSchema:
           maxItems: 1
         - items:
             format: hostname
-    customNet:
+    customBootstrapIdentity:
+      $ref: '#/definitions/base64Id'
+    customBootstrapKey:
+      $ref: '#/definitions/base64Id'
+    customNetworkId:
       type: string
+    customNetworkPort:
+      $ref: '#/definitions/tcpPort'
+    customSeedUrl:
+      type: string
+      format: uri
+    customSpecialPeers:
+      type: array
+      items:
+        $ref: '#/definitions/ipAddressAndPort'
+      minItems: 1
+      uniqueItems: true
     directoryBlockInSeconds:
       type: integer
       minimum: 0
@@ -91,10 +102,17 @@ valuesSchema:
       minimum: 0
     identityChainId:
       $ref: '#/definitions/base64Id'
-    localServerPrivateKey:
-      $ref: '#/definitions/base64Id'
-    localServerPublicKey:
-      $ref: '#/definitions/base64Id'
+    localNetworkPort:
+      $ref: '#/definitions/tcpPort'
+    localSeedUrl:
+      type: string
+      format: uri
+    localSpecialPeers:
+      type: array
+      items:
+        $ref: '#/definitions/ipAddressAndPort'
+      minItems: 1
+      uniqueItems: true
     logLevel:
       type: string
       enum:
@@ -105,6 +123,17 @@ valuesSchema:
         - error
         - fatal
         - panic
+    mainNetworkPort:
+      $ref: '#/definitions/tcpPort'
+    mainSeedUrl:
+      type: string
+      format: uri
+    mainSpecialPeers:
+      type: array
+      items:
+        $ref: '#/definitions/ipAddressAndPort'
+      minItems: 1
+      uniqueItems: true
     network:
       type: string
       enum:
@@ -112,8 +141,6 @@ valuesSchema:
         - local
         - main
         - test
-    networkPort:
-      $ref: '#/definitions/tcpPort'
     networkProfile:
       type: string
       enum:
@@ -126,22 +153,31 @@ valuesSchema:
       enum:
         - authority
         - follower
-    seedUrl:
+    serverPrivateKey:
+      $ref: '#/definitions/base64Id'
+    serverPublicKey:
+      $ref: '#/definitions/base64Id'
+    startDelay:
+      type: integer
+      minimum: 0
+    testNetworkPort:
+      $ref: '#/definitions/tcpPort'
+    testSeedUrl:
       type: string
       format: uri
-    specialPeers:
+    testSpecialPeers:
       type: array
       items:
         $ref: '#/definitions/ipAddressAndPort'
       minItems: 1
       uniqueItems: true
-    startDelay:
-      type: integer
-      minimum: 0
     tlsEnabled:
       type: boolean
     tlsPrivateKey:
       $ref: '#/definitions/pemData'
     tlsPublicCert:
       $ref: '#/definitions/pemData'
+  required:
+    - identityChainId
+    - network
   type: object
