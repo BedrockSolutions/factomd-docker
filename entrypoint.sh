@@ -42,6 +42,7 @@ case ${1} in
     ;;
 
   *)
+    ./bin/confz run
     exec "$@"
     ;;
 esac

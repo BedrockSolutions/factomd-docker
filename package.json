@@ -8,9 +8,27 @@
     "build": "docker build -t factomd:latest -t bedrocksolutions/factomd:latest .",
     "push": "docker push bedrocksolutions/factomd:latest",
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
-    "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest"
+    "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest",
+    "test": "ava"
   },
   "dependencies": {
     "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "ava": "^1.4.1",
+    "ini": "^1.3.5",
+    "js-yaml": "^3.13.1",
+    "match-all": "^1.2.5",
+    "pify": "^4.0.1",
+    "rimraf": "^2.6.3"
+  },
+  "ava": {
+    "files": [
+      "test/**/*",
+      "!test/util.js"
+    ],
+    "helpers": [
+      "test/util.js"
+    ]
   }
 }

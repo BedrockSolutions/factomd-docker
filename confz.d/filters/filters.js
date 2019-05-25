@@ -17,17 +17,27 @@ const overrides = {
   apiUser: {
     name: 'FactomdRpcUser',
   },
+  authorityServerPrivateKey: {
+    name: 'LocalServerPrivKey',
+  },
+  authorityServerPublicKey: {
+    name: 'LocalServerPublicKey',
+  },
   brainSwapHeight: {
     name: 'ChangeAcksHeight',
   },
-  broadcastNum: {
+  broadcastNumber: {
     arg: true,
+    name: 'broadcastnum'
   },
   controlPanelMode: {
     name: 'ControlPanelSetting'
   },
   corsDomains: {
     joinToken: ', ',
+  },
+  customExchangeRateAuthorityPublicKey: {
+    name: 'ExchangeRateAuthorityPublicKey'
   },
   customNetworkId: {
     arg: true,
@@ -36,14 +46,9 @@ const overrides = {
   customSeedUrl: {
     name: capitalizeUrlOptName,
   },
-  exclusive: {
-    arg: true
-  },
-  exclusiveIn: {
-    arg: true
-  },
-  faultTimeout: {
+  faultTimeoutInSeconds: {
     arg: true,
+    name: 'faulttimeout'
   },
   identityChainId: {
     name: 'IdentityChainID',
@@ -68,14 +73,20 @@ const overrides = {
   nodeName: {
     arg: true
   },
-  p2pBroadcastNumber: {
-    name: 'broadcastnum'
-  },
   roleProfile: {
     squelched: true,
   },
-  startDelay: {
-    arg: true
+  specialPeersDialOnly: {
+    arg: true,
+    name: 'exclusive'
+  },
+  specialPeersOnly: {
+    arg: true,
+    name: 'exclusiveIn'
+  },
+  startDelayInSeconds: {
+    arg: true,
+    name: 'startdelay'
   },
   testSeedUrl: {
     name: capitalizeUrlOptName,

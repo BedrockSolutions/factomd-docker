@@ -5,7 +5,7 @@ values:
 valuesSchema:
   additionalProperties: false
   definitions:
-    base64Id:
+    hexId:
       type: string
       pattern: '^[0-9a-fA-F]{64}$'
     ipAddressAndPort:
@@ -23,12 +23,10 @@ valuesSchema:
       - apiUser
     apiUser:
       - apiPassword
-    serverPrivateKey:
-      - identityChainId
-      - serverPublicKey
-    serverPublicKey:
-      - identityChainId
-      - serverPrivateKey
+    authorityServerPrivateKey:
+      - authorityServerPublicKey
+    authorityServerPublicKey:
+      - authorityServerPrivateKey
     tlsPrivateKey:
       - tlsPublicCert
     tlsPublicCert:
@@ -36,24 +34,41 @@ valuesSchema:
   properties:
     apiPassword:
       type: string
-      description: Password for API port basic authentication
+      description: 'The basic authentication password for the API and Control Panel ports. [FactomdRpcPass]'
     apiPort:
-      $ref: '#/definitions/tcpPort'
-      description: TCP port to which the API server should bind
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The API server listen port. [PortNumber]'
     apiUser:
       type: string
-      description: User name for API port basic authentication
+      description: 'The basic authentication username for the API and Control Panel ports. [FactomdRpcUser]'
+    authorityServerPrivateKey:
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: '[LocalServerPrivKey]'
+    authorityServerPublicKey:
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: '[LocalServerPublicKey]'
     brainSwapHeight:
       type: integer
       minimum: 0
-    controlPanelSetting:
+      description: 'The block height at which a brain swap will occur. [ChangeAcksHeight]'
+    broadcastNumber:
+      type: integer
+      minimum: 1
+      description: '[broadcastnum]'
+    controlPanelMode:
       type: string
       enum:
         - disabled
         - readonly
         - readwrite
+      description: 'Controls the behavior of the control panel. [ControlPanelSetting]'
     controlPanelPort:
-      $ref: '#/definitions/tcpPort'
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The Control Panel server listen port. [ControlPanelPort]'
     corsDomains:
       type: array
       items:
@@ -66,50 +81,67 @@ valuesSchema:
           maxItems: 1
         - items:
             format: hostname
+      description: 'Configures CORS for the API port. Accepts one or more allowed hostnames or a single wildcard `*`. [CorsDomains]'
     customBootstrapIdentity:
-      $ref: '#/definitions/base64Id'
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: 'The bootstrap identity used when `network: custom` is enabled. [CustomBootstrapIdentity]'
     customBootstrapKey:
-      $ref: '#/definitions/base64Id'
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: 'The bootstrap key used when `network: custom` is enabled. [CustomBootstrapKey]'
+    customExchangeRateAuthorityPublicKey:
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: '[ExchangeRateAuthorityPublicKey]'
     customNetworkId:
       type: string
+      description: 'The network id used when `network: custom` is enabled. [customnet]'
     customNetworkPort:
-      $ref: '#/definitions/tcpPort'
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The peer-to-peer port used when `network: custom` is enabled. [CustomNetworkPort]'
     customSeedUrl:
       type: string
       format: uri
+      description: 'The seed URL used when `network: custom` is enabled. [CustomSeedURL]'
     customSpecialPeers:
       type: array
       items:
         $ref: '#/definitions/ipAddressAndPort'
       minItems: 1
       uniqueItems: true
+      description: 'The special peers list used when `network: custom` is enabled. [CustomSpecialPeers]'
     directoryBlockInSeconds:
       type: integer
       minimum: 0
-    exchangeRateAuthorityPublicKey:
-      $ref: '#/definitions/base64Id'
-    exclusive:
-      type: boolean
-    exclusiveIn:
-      type: boolean
+      description: 'The length of the directory block. [DirectoryBlockInSeconds]'
     fastBoot:
       type: boolean
-    faultTimeout:
+      description: '[FastBoot]'
+    faultTimeoutInSeconds:
       type: integer
       minimum: 0
+      description: 'Seconds before Federated servers are considered at-fault. [faulttimeout]'
     identityChainId:
-      $ref: '#/definitions/base64Id'
+      allOf:
+        - $ref: '#/definitions/hexId'
+      description: '[IdentityChainID]'
     localNetworkPort:
-      $ref: '#/definitions/tcpPort'
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The peer-to-peer port used when `network: local` is enabled. [LocalNetworkPort]'
     localSeedUrl:
       type: string
       format: uri
+      description: 'The seed URL used when `network: local` is enabled. [LocalSeedURL]'
     localSpecialPeers:
       type: array
       items:
         $ref: '#/definitions/ipAddressAndPort'
       minItems: 1
       uniqueItems: true
+      description: 'The special peers list used when `network: local` is enabled. [LocalSpecialPeers]'
     logLevel:
       type: string
       enum:
@@ -120,17 +152,22 @@ valuesSchema:
         - error
         - fatal
         - panic
+      description: 'Controls the logging level of detail sent to the console. [loglvl]'
     mainNetworkPort:
-      $ref: '#/definitions/tcpPort'
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The peer-to-peer port used when `network: main` is enabled. [MainNetworkPort]'
     mainSeedUrl:
       type: string
       format: uri
+      description: 'The seed URL used when `network: main` is enabled. [MainSeedURL]'
     mainSpecialPeers:
       type: array
       items:
         $ref: '#/definitions/ipAddressAndPort'
       minItems: 1
       uniqueItems: true
+      description: 'The special peers list used when `network: main` is enabled. [MainSpecialPeers]'
     network:
       type: string
       enum:
@@ -138,45 +175,58 @@ valuesSchema:
         - local
         - main
         - test
+      description: '[Network]'
     networkProfile:
       type: string
       enum:
         - mainnet
         - testnet
+      description: ''
     nodeName:
       type: string
-    p2pBroadcastNumber:
-      type: integer
-      minimum: 1
+      description: '[nodename]'
     roleProfile:
       type: string
       enum:
         - authority
         - follower
-    serverPrivateKey:
-      $ref: '#/definitions/base64Id'
-    serverPublicKey:
-      $ref: '#/definitions/base64Id'
-    startDelay:
+      description: ''
+    specialPeersDialOnly:
+      type: boolean
+      description: 'Only dial out to nodes on the special peers list. [exclusive]'
+    specialPeersOnly:
+      type: boolean
+      description: 'Only communicate with nodes on the special peers list. [exclusiveIn]'
+    startDelayInSeconds:
       type: integer
       minimum: 0
+      description: '[startdelay]'
     testNetworkPort:
-      $ref: '#/definitions/tcpPort'
+      allOf:
+        - $ref: '#/definitions/tcpPort'
+      description: 'The peer-to-peer port used when `network: test` is enabled. [TestNetworkPort]'
     testSeedUrl:
       type: string
       format: uri
+      description: 'The seed URL used when `network: test` is enabled. [TestSeedURL]'
     testSpecialPeers:
       type: array
       items:
         $ref: '#/definitions/ipAddressAndPort'
       minItems: 1
       uniqueItems: true
+      description: 'The special peers list used when `network: test` is enabled. [TestSpecialPeers]'
     tlsEnabled:
       type: boolean
+      description: '[FactomdTlsEnabled]'
     tlsPrivateKey:
-      $ref: '#/definitions/pemData'
+      allOf:
+        - $ref: '#/definitions/pemData'
+      description: '[FactomdTlsPrivateKey]'
     tlsPublicCert:
-      $ref: '#/definitions/pemData'
+      allOf:
+        - $ref: '#/definitions/pemData'
+      description: '[FactomdTlsPublicCert]'
   required:
     - identityChainId
     - network

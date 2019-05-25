@@ -11,21 +11,21 @@ const NETWORK_PROFILES = {
   testnet: {
     customBootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
     customBootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
+    customExchangeRateAuthorityPublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
     customNetworkId: 'fct_community_test',
     customNetworkPort: 8110,
     customSeedUrl: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
     directoryBlockInSeconds: 600,
-    exchangeRateAuthorityPublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
     network: 'custom',
   },
 }
 
 const ROLE_PROFILES = {
   authority: {
-    startDelay: 600,
+    startDelayInSeconds: 600,
   },
   follower: {
-    startDelay: 0,
+    startDelayInSeconds: 0,
   },
 }
 
