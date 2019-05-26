@@ -9,7 +9,8 @@
     "push": "docker push bedrocksolutions/factomd:latest",
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
     "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest",
-    "test": "ava"
+    "test": "ava",
+    "test:build": "npm run build && npm test"
   },
   "dependencies": {
     "lodash": "^4.17.11"
@@ -23,6 +24,8 @@
     "rimraf": "^2.6.3"
   },
   "ava": {
+    "concurrency": 5,
+    "failFast": false,
     "files": [
       "test/**/*",
       "!test/util.js"

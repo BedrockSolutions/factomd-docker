@@ -39,6 +39,19 @@ const getFileFromContainer = async (filename, config) => {
   }
 }
 
+const runConfz = async config => {
+  let tmpDir
+  try {
+    tmpDir = await createTmpDir()
+    await writeConfigFile(config, tmpDir)
 
+    const name = crypto.randomBytes(5).toString('hex');
+    await execAsync(`docker run --name ${name} -v ${tmpDir}:/app/config bedrocksolutions/factomd:latest ./bin/confz run`)
+  } finally {
+    if (tmpDir) {
+      await removeTmpDir(tmpDir)
+    }
+  }
+}
 
-module.exports = { getFileFromContainer }
+module.exports = { getFileFromContainer, runConfz }

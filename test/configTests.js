@@ -3,7 +3,7 @@ const {decode} = require('ini')
 const {random, times} = require('lodash/fp')
 const matchAll = require('match-all')
 
-const {getFileFromContainer} = require('./util')
+const {getFileFromContainer, runConfz} = require('./util')
 
 const DEFAULT_CONFIG = {
   network: 'main',
@@ -21,7 +21,7 @@ const getOptions = async config => {
 
 const getArgs = async config => {
   const startupScript = await getFileFromContainer('start.sh', mergeConfig(config))
-  const regex = /-([a-zA-Z]+)=("?[^ \"]+"?)/g
+  const regex = /-([a-zA-Z]+)=("?[^ "]+"?)/g
 
   let match, args = {}
   while ((match = regex.exec(startupScript)) != null) {
@@ -46,60 +46,78 @@ const randomPem = () => {
   const name = randomString().toUpperCase()
 
   return `-----BEGIN ${name}-----
-  ${randomHexId()}
-  -----END ${name}-----`
+${randomHexId()}
+-----END ${name}-----`
 }
 
-console.log(randomPem())
-
-const optTest = (yamlName, optionName, config, valueOverride) => test(`${yamlName} -> ${optionName}`, async t => {
+const optEq = (yamlName, optionName, config, valueOverride) => test(`${yamlName} should map to ${optionName}`, async t => {
   const options = await getOptions(config)
   t.is(valueOverride || config[yamlName].toString(), options[optionName].toString())
 })
 
-const argTest = (yamlName, argName, config, valueOverride) => test(`${yamlName} -> ${argName}`, async t => {
+const argEq = (yamlName, argName, config, valueOverride) => test(`${yamlName} should map to ${argName}`, async t => {
   const args = await getArgs(config)
   t.is(valueOverride || config[yamlName].toString(), args[argName])
 })
 
-optTest('apiPassword', 'FactomdRpcPass', {apiPassword: 'password', apiUser: 'username'})
-optTest('apiPort', 'PortNumber', {apiPort: randomPort()})
-optTest('apiUser', 'FactomdRpcUser', {apiPassword: 'password', apiUser: 'username'})
-optTest('authorityServerPrivateKey', 'LocalServerPrivKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
-optTest('authorityServerPublicKey', 'LocalServerPublicKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
-optTest('brainSwapHeight', 'ChangeAcksHeight', {brainSwapHeight: randomInt(10000, 20000)})
-argTest('broadcastNumber', 'broadcastnum', {broadcastNumber: randomInt(1, 10000)})
-optTest('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'disabled'})
-optTest('controlPanelPort', 'ControlPanelPort', {controlPanelPort: randomPort()})
-optTest('corsDomains', 'CorsDomains', {corsDomains: ['foo.com', 'bar.com']}, 'foo.com, bar.com')
-optTest('customBootstrapIdentity', 'CustomBootstrapIdentity', {customBootstrapIdentity: randomHexId()})
-optTest('customBootstrapKey', 'CustomBootstrapKey', {customBootstrapKey: randomHexId()})
-optTest('customExchangeRateAuthorityPublicKey', 'ExchangeRateAuthorityPublicKey', {customExchangeRateAuthorityPublicKey: randomHexId()})
-argTest('customNetworkId', 'customnet', {customNetworkId: randomString()})
-optTest('customNetworkPort', 'CustomNetworkPort', {customNetworkPort: randomPort()})
-optTest('customSeedUrl', 'CustomSeedURL', {customSeedUrl: 'http://foo.com'})
-optTest('customSpecialPeers', 'CustomSpecialPeers', {customSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-optTest('directoryBlockInSeconds', 'DirectoryBlockInSeconds', {directoryBlockInSeconds: randomSeconds()})
-optTest('fastBoot', 'FastBoot', {fastBoot: true})
-argTest('faultTimeoutInSeconds', 'faulttimeout', {faultTimeoutInSeconds: randomSeconds()})
-optTest('identityChainId', 'IdentityChainID', {identityChainId: randomHexId()})
-optTest('localNetworkPort', 'LocalNetworkPort', {localNetworkPort: randomPort()})
-optTest('localSeedUrl', 'LocalSeedURL', {localSeedUrl: 'http://foo.com'})
-optTest('localSpecialPeers', 'LocalSpecialPeers', {localSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-argTest('logLevel', 'loglvl', {logLevel: 'panic'})
-optTest('mainNetworkPort', 'MainNetworkPort', {mainNetworkPort: randomPort()})
-optTest('mainSeedUrl', 'MainSeedURL', {mainSeedUrl: 'http://foo.com'})
-optTest('mainSpecialPeers', 'MainSpecialPeers', {mainSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-optTest('network', 'Network', {network: 'test'}, 'TEST')
-argTest('nodeName', 'nodename', {nodeName: randomString()})
-argTest('specialPeersDialOnly', 'exclusive', {specialPeersDialOnly: true})
-argTest('specialPeersOnly', 'exclusiveIn', {specialPeersOnly: true})
-argTest('startDelayInSeconds', 'startdelay', {startDelayInSeconds: randomSeconds()})
-optTest('testNetworkPort', 'TestNetworkPort', {testNetworkPort: randomPort()})
-optTest('testSeedUrl', 'TestSeedURL', {testSeedUrl: 'http://foo.com'})
-optTest('testSpecialPeers', 'TestSpecialPeers', {testSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-optTest('tlsEnabled', 'FactomdTlsEnabled', {tlsEnabled: false})
-optTest('tlsPrivateKey', 'FactomdTlsPrivKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()})
-optTest('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()})
+const badCfg = (config, desc) => test(desc, async t => {
+  try {
+    await runConfz(mergeConfig(config))
+    t.fail('No exception was thrown')
+  } catch (err) {
+    t.pass()
+  }
+})
 
+optEq('apiPassword', 'FactomdRpcPass', {apiPassword: randomString(), apiUser: randomString()})
+badCfg({apiPassword: randomString()}, 'API password but no username should fail')
+
+optEq('apiPort', 'PortNumber', {apiPort: randomPort()})
+badCfg({apiPort: 1024}, 'API privileged port should fail')
+
+optEq('apiUser', 'FactomdRpcUser', {apiPassword: randomString(), apiUser: randomString()})
+badCfg({apiUser: randomString()}, 'API user but no password should fail')
+
+optEq('authorityServerPrivateKey', 'LocalServerPrivKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
+badCfg({authorityServerPrivateKey: randomHexId()}, 'Auth server private key but no public key should fail')
+
+optEq('authorityServerPublicKey', 'LocalServerPublicKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
+badCfg({authorityServerPublicKey: randomHexId()}, 'Auth server public key but no private key should fail')
+
+optEq('brainSwapHeight', 'ChangeAcksHeight', {brainSwapHeight: randomInt(10000, 20000)})
+badCfg({brainSwapHeight: randomString()}, 'Brain swap height is a string should fail')
+
+argEq('broadcastNumber', 'broadcastnum', {broadcastNumber: randomInt(1, 10000)})
+optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'disabled'})
+optEq('controlPanelPort', 'ControlPanelPort', {controlPanelPort: randomPort()})
+optEq('corsDomains', 'CorsDomains', {corsDomains: ['foo.com', 'bar.com']}, 'foo.com, bar.com')
+optEq('customBootstrapIdentity', 'CustomBootstrapIdentity', {customBootstrapIdentity: randomHexId()})
+optEq('customBootstrapKey', 'CustomBootstrapKey', {customBootstrapKey: randomHexId()})
+optEq('customExchangeRateAuthorityPublicKey', 'ExchangeRateAuthorityPublicKey', {customExchangeRateAuthorityPublicKey: randomHexId()})
+argEq('customNetworkId', 'customnet', {customNetworkId: randomString()})
+optEq('customNetworkPort', 'CustomNetworkPort', {customNetworkPort: randomPort()})
+optEq('customSeedUrl', 'CustomSeedURL', {customSeedUrl: 'http://foo.com'})
+optEq('customSpecialPeers', 'CustomSpecialPeers', {customSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
+optEq('directoryBlockInSeconds', 'DirectoryBlockInSeconds', {directoryBlockInSeconds: randomSeconds()})
+optEq('fastBoot', 'FastBoot', {fastBoot: true})
+argEq('faultTimeoutInSeconds', 'faulttimeout', {faultTimeoutInSeconds: randomSeconds()})
+optEq('identityChainId', 'IdentityChainID', {identityChainId: randomHexId()})
+optEq('localNetworkPort', 'LocalNetworkPort', {localNetworkPort: randomPort()})
+optEq('localSeedUrl', 'LocalSeedURL', {localSeedUrl: 'http://foo.com'})
+optEq('localSpecialPeers', 'LocalSpecialPeers', {localSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
+argEq('logLevel', 'loglvl', {logLevel: 'panic'})
+optEq('mainNetworkPort', 'MainNetworkPort', {mainNetworkPort: randomPort()})
+optEq('mainSeedUrl', 'MainSeedURL', {mainSeedUrl: 'http://foo.com'})
+optEq('mainSpecialPeers', 'MainSpecialPeers', {mainSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
+optEq('network', 'Network', {network: 'test'}, 'TEST')
+argEq('nodeName', 'nodename', {nodeName: randomString()})
+argEq('specialPeersDialOnly', 'exclusive', {specialPeersDialOnly: true})
+argEq('specialPeersOnly', 'exclusiveIn', {specialPeersOnly: true})
+argEq('startDelayInSeconds', 'startdelay', {startDelayInSeconds: randomSeconds()})
+optEq('testNetworkPort', 'TestNetworkPort', {testNetworkPort: randomPort()})
+optEq('testSeedUrl', 'TestSeedURL', {testSeedUrl: 'http://foo.com'})
+optEq('testSpecialPeers', 'TestSpecialPeers', {testSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
+optEq('tlsEnabled', 'FactomdTlsEnabled', {tlsEnabled: false})
+optEq('tlsPrivateKey', 'FactomdTlsPrivateKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/private_key.pem')
+optEq('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/public_cert.pem')
 
