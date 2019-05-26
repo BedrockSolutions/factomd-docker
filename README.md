@@ -240,7 +240,36 @@ or a single wildcard `*`.
 
 #### `logLevel`
 
-* 
+* Controls the verbosity of log output.
+* Type: `string`
+* Enum: `none`, `debug`, `info`, `warning`, `error`, `fatal`, `panic`
+* Factomd argument: `loglvl`
+
+#### `mainNetworkPort`
+
+* The peer-to-peer port used when `network: main` is enabled.
+* Type: `tcpPort`
+* Factomd option: `MainNetworkPort`
+
+#### `mainSeedUrl`
+
+* The seed URL used when `network: main` is enabled.
+* Type: `uri`
+* Factomd option: `MainSeedURL`
+
+#### `mainSpecialPeers`
+
+* The special peers list used when `network: main` is enabled.
+* Type: `array`
+* Items:
+  * Type: `ipAddressAndPort`
+* Factomd option: `MainSpecialPeers`
+
+#### `network`
+
+* The network to connect to.
+* Type: `string`
+* Enum: `custom`, `local`, `main`, `test`
 
 ### Commands
 

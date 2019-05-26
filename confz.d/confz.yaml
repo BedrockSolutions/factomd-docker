@@ -168,7 +168,7 @@ valuesSchema:
         - error
         - fatal
         - panic
-      description: 'The log verbosity level. [loglvl]'
+      description: 'Controls the verbosity of log output. [loglvl]'
     mainNetworkPort:
       allOf:
         - $ref: '#/definitions/tcpPort'
@@ -191,7 +191,7 @@ valuesSchema:
         - local
         - main
         - test
-      description: '[Network]'
+      description: 'The network to connect to. [Network]'
     networkProfile:
       type: string
       enum:
