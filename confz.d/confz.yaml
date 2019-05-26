@@ -5,9 +5,20 @@ values:
 valuesSchema:
   additionalProperties: false
   definitions:
+    16BitInteger:
+      type: integer
+      minimum: 0
+      maximum: 65535
+    block:
+      type: integer
+      minimum: 0
+      maximum: 9999999
     hexId:
       type: string
       pattern: '^[0-9a-fA-F]{64}$'
+    hostname:
+      type: string
+      format: hostname
     ipAddressAndPort:
       type: string
       pattern: '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(102[5-9]|10[3-9][0-9]|1[1-9][0-9]{2}|[2-9][0-9]{3}|[1-5][0-9]{4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
@@ -18,6 +29,9 @@ valuesSchema:
       type: integer
       minimum: 1025
       maximum: 65535
+    uri:
+      type: string
+      format: uri
   dependencies:
     apiPassword:
       - apiUser
@@ -51,13 +65,14 @@ valuesSchema:
         - $ref: '#/definitions/hexId'
       description: '[LocalServerPublicKey]'
     brainSwapHeight:
-      type: integer
-      minimum: 0
+      allOf:
+        - $ref: '#/definitions/block'
       description: 'The block height at which a brain swap will occur. [ChangeAcksHeight]'
     broadcastNumber:
-      type: integer
+      allOf:
+        - $ref: '#/definitions/16BitInteger'
       minimum: 1
-      description: '[broadcastnum]'
+      description: 'Number of peers to broadcast to in the peer to peer networking. [broadcastnum]'
     controlPanelMode:
       type: string
       enum:
@@ -80,7 +95,7 @@ valuesSchema:
             const: '*'
           maxItems: 1
         - items:
-            format: hostname
+            $ref: '#/definitions/hostname'
       description: 'Configures CORS for the API port. Accepts one or more allowed hostnames or a single wildcard `*`. [CorsDomains]'
     customBootstrapIdentity:
       allOf:
@@ -93,17 +108,18 @@ valuesSchema:
     customExchangeRateAuthorityPublicKey:
       allOf:
         - $ref: '#/definitions/hexId'
-      description: '[ExchangeRateAuthorityPublicKey]'
+      description: 'The exchange rate key used when `network: custom` is enabled. [ExchangeRateAuthorityPublicKey]'
     customNetworkId:
       type: string
+      maxLength: 20
       description: 'The network id used when `network: custom` is enabled. [customnet]'
     customNetworkPort:
       allOf:
         - $ref: '#/definitions/tcpPort'
       description: 'The peer-to-peer port used when `network: custom` is enabled. [CustomNetworkPort]'
     customSeedUrl:
-      type: string
-      format: uri
+      allOf:
+        - $ref: '#/definitions/uri'
       description: 'The seed URL used when `network: custom` is enabled. [CustomSeedURL]'
     customSpecialPeers:
       type: array
@@ -113,27 +129,27 @@ valuesSchema:
       uniqueItems: true
       description: 'The special peers list used when `network: custom` is enabled. [CustomSpecialPeers]'
     directoryBlockInSeconds:
-      type: integer
-      minimum: 0
+      allOf:
+        - $ref: '#/definitions/16BitInteger'
       description: 'The length of the directory block. [DirectoryBlockInSeconds]'
     fastBoot:
       type: boolean
       description: '[FastBoot]'
     faultTimeoutInSeconds:
-      type: integer
-      minimum: 0
+      allOf:
+        - $ref: '#/definitions/16BitInteger'
       description: 'Seconds before Federated servers are considered at-fault. [faulttimeout]'
     identityChainId:
       allOf:
         - $ref: '#/definitions/hexId'
-      description: '[IdentityChainID]'
+      description: 'Identification chain for the server. [IdentityChainID]'
     localNetworkPort:
       allOf:
         - $ref: '#/definitions/tcpPort'
       description: 'The peer-to-peer port used when `network: local` is enabled. [LocalNetworkPort]'
     localSeedUrl:
-      type: string
-      format: uri
+      allOf:
+        - $ref: '#/definitions/uri'
       description: 'The seed URL used when `network: local` is enabled. [LocalSeedURL]'
     localSpecialPeers:
       type: array
@@ -152,7 +168,7 @@ valuesSchema:
         - error
         - fatal
         - panic
-      description: 'Controls the logging level of detail sent to the console. [loglvl]'
+      description: 'The log verbosity level. [loglvl]'
     mainNetworkPort:
       allOf:
         - $ref: '#/definitions/tcpPort'

@@ -48,10 +48,41 @@ A couple of points:
 
 ### Configuration Options
 
-The following subset of factomd configuration options and command line
-arguments are supported. If there is a missing setting that you would like
-added, please [open an issue](https://github.com/BedrockSolutions/factomd-docker/issues).
+A subset of factomd configuration options and command line arguments are 
+supported. If there is a missing setting that you would like added, please
+[open an issue](https://github.com/BedrockSolutions/factomd-docker/issues).
 
+#### Custom Data Types
+
+The following custom data types have been created, in addition to the
+usual standard types:
+
+* `16BitInteger`: An integer between 0-65535
+  * Example: `4096`
+* `block`: An integer between 0-9999999
+  * Example: `194142`
+* `hexId`: A 64-character hexadecimal string
+  * Example: `38bab1455b7bd7e5efd15c53c777c79d0c988e9210f1da49a99d95b3a6417be9`
+* `hostname`: A standard Internet hostname
+  * Example: `www.foo.com`
+* `ipAddressAndPort`: A IPv4 address and port, separated by a `:`
+  * Example: `12.34.56.78:9000`
+* `pemData`: Standard Privacy Enhanced Mail format
+  * Example:
+```
+  -----BEGIN CERTIFICATE-----
+  MIIDXjCCAkYCCQCcHTMVrEHBczANBgkqhkiG9w0BAQsFADBxMQswCQYDVQQGEwJV
+  UzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEaMBgG
+  A1UECgwRQmVkcm9jayBTb2x1dGlvbnMxHDAaBgNVBAMME2JlZHJvY2tzb2x1dGlv
+  bnMuaW8wHhcNMTkwNTIxMTczNTEyWhcNMjAwNTIwMTczNTEyWjBxMQswCQYDVQQG
+  EwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEa
+  -----END CERTIFICATE-----
+```
+* `tcpPort`: Unprivileged TCP port in the range 1025-65535
+  * Example: `8080`
+* `uri`: A standard Internet URI
+  * Example: `https://api.bar.com/foo`
+  
 #### `apiPassword`
 
 * The password for the API and Control Panel ports' basic 
@@ -62,8 +93,7 @@ authentication.
 #### `apiPort`
 
 * The port the API server should listen on.
-* Type: `integer`
-* Range: `1025-65535`
+* Type: `tcpPort`
 * Factomd option: `PortNumber`
 
 #### `apiUser`
@@ -73,12 +103,30 @@ authentication.
 * Type: `string`
 * Factomd option: `FactomdRpcUser`
 
+#### `authorityServerPrivateKey`
+
+* An authority server identity private key
+* Type: `hexId`
+* Factomd option: `LocalServerPrivKey`
+
+#### `authorityServerPublicKey`
+
+* An authority server identity public key
+* Type: `hexId`
+* Factomd option: `LocalServerPublicKey`
+
 #### `brainSwapHeight`
 
 * The block height at which a brain swap will occur.
-* Type: `integer`
-* Constraint: `>= 0`
+* Type: `block`
 * Factomd option: `ChangeAcksHeight`
+
+#### `broadcastNumber`
+
+* Number of peers to broadcast to in the peer to peer networking.
+* Type: `16BitInteger`
+* Minimum: 1
+* Factomd argument: `broadcastnum`
 
 #### `controlPanelMode`
 
@@ -90,8 +138,7 @@ authentication.
 #### `controlPanelPort`
 
 * The port the control panel server should listen on.
-* Type: `integer`
-* Range: `1025-65535`
+* Type: `tcpPort`
 * Factomd option: `ControlPanelPort`
 
 #### `corsDomains`
@@ -100,62 +147,100 @@ authentication.
 or a single wildcard `*`.
 * Type: `array`
 * Items:
-  * Type: `string`
-  * Format: `hostname`
+  * Type: `hostname`
 * Factomd option: `CorsDomains`
 
 #### `customBootstrapIdentity`
 
 * The custom bootstrap identity used when `network: custom` is enabled.
-* Type: `string`
-* Format: `base64Id`
+* Type: `hexId`
 * Factomd option: `CustomBootstrapIdentity`
 
 #### `customBootstrapKey`
 
 * The custom bootstrap key used when `network: custom` is enabled.
-* Type: `string`
-* Format: `base64Id`
+* Type: `hexId`
 * Factomd option: `CustomBootstrapKey`
+
+#### `customExchangeRateAuthorityPublicKey`
+
+* The exchange rate key used when `network: custom` is enabled.
+* Type: `hexId`
+* Factomd option: `ExchangeRateAuthorityPublicKey`
 
 #### `customNetworkId`
 
 * The custom network id used when `network: custom` is enabled.
 * Type: `string`
+* Max length: 20
 * Factomd argument: `customnet`
 
 #### `customNetworkPort`
 
 * The peer-to-peer port used when `network: custom` is enabled.
-* Type: `integer`
-* Range: `1025-65535`
+* Type: `tcpPort`
 * Factomd option: `CustomNetworkPort`
 
 #### `customSeedUrl`
 
 * The seed URL used when `network: custom` is enabled.
-* Type: `string`
-* Format: `URI`
+* Type: `uri`
 * Factomd option: `CustomSeedURL`
 
 #### `customSpecialPeers`
 * The special peers list used when `network: custom` is enabled.
 * Type: `array`
 * Items:
-  * Type: `string`
-  * Format: `ipAddressAndPort`
+  * Type: `ipAddressAndPort`
 * Factomd option: `CustomSpecialPeers`
 
 #### `directoryBlockInSeconds`
 
+* The duration of the directory block in seconds.
+* Type: `16BitInteger`
+* Factomd option: `DirectoryBlockInSeconds`
 
+#### `fastBoot`
 
-#### `p2pBroadcastNumber`
+* Enable/disable fast boot functionality.
+* Type: `boolean`
+* Factomd option: `FastBoot`
 
-* Number of peers to broadcast to in the peer-to-peer network.
-* Type: `integer`
-* Constraint: `> 0`
-* Factomd argument: `broadcastnum`
+#### `faultTimeoutInSeconds`
+
+* Seconds before Federated servers are considered at-fault.
+* Type: `16BitInteger`
+* Factomd argument: `faulttimeout`
+
+#### `identityChainId`
+
+* Identification chain for the server.
+* Type: `hexId`
+* Factomd option: `IdentityChainID`
+
+#### `localNetworkPort`
+
+* The peer-to-peer port used when `network: local` is enabled.
+* Type: `tcpPort`
+* Factomd option: `LocalNetworkPort`
+
+#### `localSeedUrl`
+
+* The seed URL used when `network: local` is enabled.
+* Type: `uri`
+* Factomd option: `LocalSeedURL`
+
+#### `localSpecialPeers`
+
+* The special peers list used when `network: local` is enabled.
+* Type: `array`
+* Items:
+  * Type: `ipAddressAndPort`
+* Factomd option: `LocalSpecialPeers`
+
+#### `logLevel`
+
+* 
 
 ### Commands
 

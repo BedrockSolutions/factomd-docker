@@ -1,6 +1,6 @@
 FROM bedrocksolutions/confz:latest as confz
 
-FROM factominc/factomd:v6.2.0-alpine AS factomd
+FROM factominc/factomd:v6.3.1-alpine AS factomd
 
 FROM node:10-alpine AS node_modules
 
