@@ -2,6 +2,7 @@ const {get, mergeAll} = require('lodash/fp')
 
 const GLOBAL_DEFAULTS = {
   identityChainId: 'FA1E000000000000000000000000000000000000000000000000000000000000',
+  startDelayInSeconds: 0,
 }
 
 const NETWORK_PROFILES = {
@@ -23,9 +24,6 @@ const NETWORK_PROFILES = {
 const ROLE_PROFILES = {
   authority: {
     startDelayInSeconds: 600,
-  },
-  follower: {
-    startDelayInSeconds: 0,
   },
 }
 

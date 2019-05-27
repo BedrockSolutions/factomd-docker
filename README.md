@@ -9,6 +9,20 @@ This is a Docker image containing the Factom Protocol daemon.
   * Kubernetes-ready
   * Runs as non-root user
 
+## Installation
+
+The basename of the image is:
+```
+bedrocksolutions/factomd
+```
+
+The following tags are available:
+
+* `mainnet`: Contains the current version of `factomd` running on the
+mainnet.
+* `testnet`: Contains the current version of `factomd` running on the
+testnet.
+
 ## The Basics
 
 ### Volumes
@@ -46,13 +60,67 @@ A couple of points:
   * Both `factomd.conf` and command line arguments are set via the same 
   YAML configuration. One config to rule them all!
 
-### Configuration Options
+### Runtime configuration updates
 
-A subset of factomd configuration options and command line arguments are 
-supported. If there is a missing setting that you would like added, please
+All active configuration files mounted under `/app/config` are monitored 
+for changes. When a change is detected, the new configuration will be 
+validated and a fresh `start.sh` script and `factomd.conf` will be 
+generated as necessary.
+
+### Commands
+
+The container accepts several commands. These commands are passed to the
+container as the first and only command argument. Example:
+```bash
+docker run \
+  --name factomd
+  -v /path/to/config:/app/config \
+  -v /path/to/db:/app/database \
+  -p 8108:8108
+  bedrocksolutions/factomd:<tag> [command]
+```
+
+#### start
+
+This is the default command. It processes the configuration, establishes
+a watcher process to monitor the configuration for changes, and starts
+`factomd`.
+
+#### config
+
+Displays the merged YAML configuration.
+
+#### files
+
+Displays the generated start script, `factomd.conf`, and any other
+generated files.
+
+#### help
+
+Displays a help message that lists the various commands.
+
+#### schema
+
+Displays the JSON Schema used for validating the YAML configuration. 
+Useful when debugging validation errors or when trying to remember 
+the YAML file syntax.
+
+#### shell
+
+For use when a shell into the container is desired.
+
+## Configuration Schema
+
+All configuration passed to the container is validated against a rigorous
+schema. Validation failure during container start results in immediate
+failure. Validation failure during runtime logs the errors to STDOUT and
+retains the previous configuration.
+
+> Note: A subset of factomd configuration options and command line arguments are 
+currently supported. If there is a setting missing, please
 [open an issue](https://github.com/BedrockSolutions/factomd-docker/issues).
 
-#### Custom Data Types
+### Custom Data Types
 
 The following custom data types have been created, in addition to the
 usual standard types:
@@ -67,7 +135,7 @@ usual standard types:
   * Example: `www.foo.com`
 * `ipAddressAndPort`: A IPv4 address and port, separated by a `:`
   * Example: `12.34.56.78:9000`
-* `pemData`: Standard Privacy Enhanced Mail format
+* `pemData`: Standard Privacy Enhanced Mail format data
   * Example:
 ```
   -----BEGIN CERTIFICATE-----
@@ -82,7 +150,9 @@ usual standard types:
   * Example: `8080`
 * `uri`: A standard Internet URI
   * Example: `https://api.bar.com/foo`
-  
+
+### Options
+
 #### `apiPassword`
 
 * The password for the API and Control Panel ports' basic 
@@ -271,43 +341,80 @@ or a single wildcard `*`.
 * Type: `string`
 * Enum: `custom`, `local`, `main`, `test`
 
-### Commands
+#### `networkProfile`
 
-The container accepts several commands. These commands are passed to the
-container as the first and only command argument. Example:
-```bash
-docker run \
-  --name factomd
-  -v /path/to/config:/app/config \
-  -v /path/to/db:/app/database \
-  -p 8108:8108
-  bedrocksolutions/factomd:<tag> [command]
-```
+* Selects a predefined group of network-specific settings.
+* Type: `string`
+* Enum: `mainnet`, `testnet`
 
-#### start
+#### `nodeName`
 
-This is the default command. It processes the configuration, establishes
-a watcher process to monitor the configuration for changes, and starts
-`factomd`.
+* The name of the node. Displayed in the control panel.
+* Type: `string`
+* Factomd argument: `nodename`
 
-#### config
+#### `roleProfile`
 
-Displays the merged YAML configuration.
+* Selects a predefined group of role-specific settings.
+* Type: `string`
+* Enum: `authority`
 
-#### files
+#### `specialPeersDialOnly`
 
-Displays the generated start script, `factomd.conf`, and any other
-generated files.
+* Only dial out to nodes on the special peers list.
+* Type: `boolean`
+* Factomd argument: `exclusive`
 
-#### schema
+#### `specialPeersOnly`
 
-Displays the JSON Schema used for validating the YAML configuration. 
-Useful when debugging validation errors or when trying to remember 
-the YAML file syntax.
+* Only communicate with nodes on the special peers list.
+* Type: `boolean`
+* Factomd argument: `exclusiveIn`
 
-#### shell
+#### `startDelayInSeconds`
 
-For use when a shell into the container is desired.
+* Seconds before message processing is started.
+* Type: `16BitInteger`
+* Factomd argument: `startdelay`
+
+#### `testNetworkPort`
+
+* The peer-to-peer port used when `network: test` is enabled.
+* Type: `tcpPort`
+* Factomd option: `TestNetworkPort`
+
+#### `testSeedUrl`
+
+* The seed URL used when `network: test` is enabled.
+* Type: `uri`
+* Factomd option: `TestSeedURL`
+
+#### `testSpecialPeers`
+
+* The special peers list used when `network: test` is enabled.
+* Type: `array`
+* Items:
+  * Type: `ipAddressAndPort`
+* Factomd option: `TestSpecialPeers`
+
+#### `tlsEnabled`
+
+* Enables TLS on both the API and Control Panel ports.
+* Type: `boolean`
+* Factomd option: `FactomdTlsEnabled`
+
+#### `tlsPrivateKey`
+
+* Private key used to enable TLS on the API and Control Panel ports.
+* Type: `pemData`
+* Factomd option: `FactomdTlsPrivateKey`
+
+#### `tlsPublicCert`
+
+* Public certificate used to enable TLS on the API and Control Panel ports.
+* Type: `pemData`
+* Factomd option: `FactomdTlsPublicCert`
+
 
 
 

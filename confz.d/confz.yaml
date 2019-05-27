@@ -79,7 +79,7 @@ valuesSchema:
         - disabled
         - readonly
         - readwrite
-      description: 'Controls the behavior of the control panel. [ControlPanelSetting]'
+      description: 'Controls the behavior of the Control Panel. [ControlPanelSetting]'
     controlPanelPort:
       allOf:
         - $ref: '#/definitions/tcpPort'
@@ -197,16 +197,16 @@ valuesSchema:
       enum:
         - mainnet
         - testnet
-      description: ''
+      description: 'Selects a predefined group of network-specific settings. [N/A]'
     nodeName:
       type: string
-      description: '[nodename]'
+      maxlength: 20
+      description: 'The name of the node. Displayed in the control panel. [nodename]'
     roleProfile:
       type: string
       enum:
         - authority
-        - follower
-      description: ''
+      description: 'Selects a predefined group of role-specific settings. [N/A]'
     specialPeersDialOnly:
       type: boolean
       description: 'Only dial out to nodes on the special peers list. [exclusive]'
@@ -214,9 +214,9 @@ valuesSchema:
       type: boolean
       description: 'Only communicate with nodes on the special peers list. [exclusiveIn]'
     startDelayInSeconds:
-      type: integer
-      minimum: 0
-      description: '[startdelay]'
+      allOf:
+        - $ref: '#/definitions/16BitInteger'
+      description: 'Seconds before message processing is started. [startdelay]'
     testNetworkPort:
       allOf:
         - $ref: '#/definitions/tcpPort'
@@ -234,15 +234,15 @@ valuesSchema:
       description: 'The special peers list used when `network: test` is enabled. [TestSpecialPeers]'
     tlsEnabled:
       type: boolean
-      description: '[FactomdTlsEnabled]'
+      description: 'Enables TLS on both the API and Control Panel ports. [FactomdTlsEnabled]'
     tlsPrivateKey:
       allOf:
         - $ref: '#/definitions/pemData'
-      description: '[FactomdTlsPrivateKey]'
+      description: 'Private key used to enable TLS on the API and Control Panel ports. [FactomdTlsPrivateKey]'
     tlsPublicCert:
       allOf:
         - $ref: '#/definitions/pemData'
-      description: '[FactomdTlsPublicCert]'
+      description: 'Public certificate used to enable TLS on the API and Control Panel ports. [FactomdTlsPublicCert]'
   required:
     - identityChainId
     - network
