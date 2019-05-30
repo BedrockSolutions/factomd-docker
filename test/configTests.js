@@ -1,7 +1,6 @@
 const test = require('ava')
 const {decode} = require('ini')
 const {random, times} = require('lodash/fp')
-const matchAll = require('match-all')
 
 const {getFileFromContainer, runConfz} = require('./util')
 
@@ -32,7 +31,7 @@ const getArgs = async config => {
 }
 
 
-const randomInt = (min, max = min) => random(min === max ? 0 : min, max)
+const randomInt = (min = 100000, max = min) => random(min === max ? 0 : min, max)
 
 const randomSeconds = () => randomInt(0, 1000)
 
@@ -77,19 +76,31 @@ badCfg({apiPort: 1024}, 'API privileged port should fail')
 
 optEq('apiUser', 'FactomdRpcUser', {apiPassword: randomString(), apiUser: randomString()})
 badCfg({apiUser: randomString()}, 'API user but no password should fail')
+badCfg({apiPassword: randomString(), apiUser: randomInt()}, 'API user is int should fail')
 
 optEq('authorityServerPrivateKey', 'LocalServerPrivKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
 badCfg({authorityServerPrivateKey: randomHexId()}, 'Auth server private key but no public key should fail')
+badCfg({authorityServerPrivateKey: randomString(), authorityServerPublicKey: randomHexId()}, 'Auth server private key is not PEM should fail')
 
 optEq('authorityServerPublicKey', 'LocalServerPublicKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
 badCfg({authorityServerPublicKey: randomHexId()}, 'Auth server public key but no private key should fail')
+badCfg({authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomString()}, 'Auth server public key is not PEM should fail')
 
 optEq('brainSwapHeight', 'ChangeAcksHeight', {brainSwapHeight: randomInt(10000, 20000)})
 badCfg({brainSwapHeight: randomString()}, 'Brain swap height is a string should fail')
 
 argEq('broadcastNumber', 'broadcastnum', {broadcastNumber: randomInt(1, 10000)})
+badCfg({broadcastNumber: 0}, 'Broadcast number is zero should fail')
+badCfg({broadcastNumber: -randomInt(1, 10000)}, 'Broadcast number is negative should fail')
+
 optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'disabled'})
+optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'readonly'})
+optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'readwrite'})
+badCfg({controlPanelMode: randomString()}, 'Control panel mode is random string should fail')
+
 optEq('controlPanelPort', 'ControlPanelPort', {controlPanelPort: randomPort()})
+badCfg({controlPanelPort: randomInt(1, 1024)}, 'Control panel port is privileged should fail')
+
 optEq('corsDomains', 'CorsDomains', {corsDomains: ['foo.com', 'bar.com']}, 'foo.com, bar.com')
 optEq('customBootstrapIdentity', 'CustomBootstrapIdentity', {customBootstrapIdentity: randomHexId()})
 optEq('customBootstrapKey', 'CustomBootstrapKey', {customBootstrapKey: randomHexId()})
