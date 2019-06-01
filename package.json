@@ -14,10 +14,12 @@
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
     "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest",
     "test": "ava",
-    "test:build": "npm run build && npm test"
+    "test:build": "npm run build && npm test",
+    "config": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest config"
   },
   "dependencies": {
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "ms": "^2.1.1"
   },
   "devDependencies": {
     "ava": "^1.4.1",

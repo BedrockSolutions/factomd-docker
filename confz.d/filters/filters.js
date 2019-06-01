@@ -1,117 +1,177 @@
-const {capitalize, flow, isArray, isFunction, isString, join, replace, toLower, toUpper, upperFirst} = require('lodash/fp')
+const {assignAll, capitalize, flow, get, isArray, isFunction, isString, join, omit, toLower, upperFirst} = require('lodash/fp')
+const ms = require('ms')
 
 const DEFAULT_ARG_NAME = toLower
-
 const DEFAULT_OPT_NAME = upperFirst
 
-const factomdPrefixOptName = (_, key) => `Factomd${upperFirst(key)}`
-const capitalizeUrlOptName = (_, key) => `${upperFirst(replace('Url', 'URL', key))}`
+const getNetwork = ({network}) => ['MAIN', 'LOCAL'].includes(network) ? network : 'CUSTOM'
+
+const isCustomNetwork = values => getNetwork(values) === 'CUSTOM'
+
+const networkPrefixOptName = suffix => values =>
+  `${capitalize(getNetwork(values))}${suffix}`
+
+const durationToSeconds = value => isString(value) ? ms(value) * 1000 : value
 
 const overrides = {
   apiPort: {
     name: 'PortNumber',
   },
-  apiPassword: {
-    name: 'FactomdRpcPass',
-  },
-  apiUser: {
-    name: 'FactomdRpcUser',
-  },
-  authorityServerPrivateKey: {
-    name: 'LocalServerPrivKey',
-  },
-  authorityServerPublicKey: {
-    name: 'LocalServerPublicKey',
-  },
-  brainSwapHeight: {
-    name: 'ChangeAcksHeight',
-  },
-  broadcastNumber: {
+  balanceHash: {
     arg: true,
-    name: 'broadcastnum'
   },
-  controlPanelMode: {
+  blockTime: {
+    name: 'DirectoryBlockInSeconds',
+    value: durationToSeconds,
+  },
+  bootstrapIdentity: {
+    name: 'CustomBootstrapIdentity',
+  },
+  bootstrapKey: {
+    name: 'CustomBootstrapKey',
+  },
+  controlPanel: {
     name: 'ControlPanelSetting'
   },
-  corsDomains: {
-    joinToken: ', ',
-  },
-  customExchangeRateAuthorityPublicKey: {
-    name: 'ExchangeRateAuthorityPublicKey'
-  },
-  customNetworkId: {
+  controlPanelName: {
     arg: true,
-    name: 'customnet'
+    name: 'nodename',
   },
-  customSeedUrl: {
-    name: capitalizeUrlOptName,
+  dbFastBoot: {
+    name: 'FastBoot',
   },
-  faultTimeoutInSeconds: {
+  faultTimeout: {
     arg: true,
-    name: 'faulttimeout'
+    value: durationToSeconds,
   },
-  identityChainId: {
+  forceFollower: {
+    arg: true,
+    name: 'follower',
+  },
+  identityActivationHeight: {
+    name: 'ChangeAcksHeight',
+  },
+  identityChain: {
     name: 'IdentityChainID',
   },
-  localSeedUrl: {
-    name: capitalizeUrlOptName,
+  identityPrivateKey: {
+    name: 'LocalServerPrivKey',
+  },
+  identityPublicKey: {
+    name: 'LocalServerPublicKey',
   },
   logLevel: {
     arg: true,
     name: 'loglvl',
   },
-  mainSeedUrl: {
-    name: capitalizeUrlOptName,
-  },
   network: {
-    value: toUpper,
-    unquotedString: true,
-  },
-  networkProfile: {
     squelched: true,
   },
-  nodeName: {
-    arg: true
-  },
-  roleProfile: {
+  networks: {
     squelched: true,
   },
-  specialPeersDialOnly: {
+  oracleChain: {
+    name: 'ExchangeRateChainId'
+  },
+  oraclePublicKey: {
+    name: 'ExchangeRateAuthorityPublicKey'
+  },
+  p2pEnable: {
     arg: true,
-    name: 'exclusive'
+    name: 'enablenet',
   },
-  specialPeersOnly: {
+  p2pFanout: {
     arg: true,
-    name: 'exclusiveIn'
+    name: 'broadcastnum',
   },
-  startDelayInSeconds: {
+  p2pMode: {
+    name: ({p2pMode}) => {
+      switch (p2pMode) {
+        case 'ACCEPT':
+          return 'exclusive'
+        case 'REFUSE':
+          return 'exclusiveIn'
+      }
+    },
+    squelched: ({p2pMode}) => !['ACCEPT', 'REFUSE'].includes(p2pMode),
+    value: value => ['ACCEPT', 'REFUSE'].includes(value),
+  },
+  p2pPort: {
+    name:  networkPrefixOptName('NetworkPort')
+  },
+  p2pSeed: {
+    name: networkPrefixOptName('SeedURL'),
+  },
+  p2pSpecialPeers: {
+    name: networkPrefixOptName('SpecialPeers'),
+  },
+  p2pTimeout: {
     arg: true,
-    name: 'startdelay'
+    name: 'deadline',
+    value: durationToSeconds
   },
-  testSeedUrl: {
-    name: capitalizeUrlOptName,
+  pprofExpose: {
+    arg: true,
+    name: 'exposeprofiler',
   },
-  tlsEnabled: {
-    name: factomdPrefixOptName,
+  pprofMPR: {
+    arg: true,
+    name: 'mpr',
   },
-  tlsPrivateKey: {
-    name: factomdPrefixOptName,
+  pprofPort: {
+    arg: true,
+    name: 'logPort',
+  },
+  role: {
+    squelched: true,
+  },
+  roles: {
+    squelched: true
+  },
+  roundTimeout: {
+    arg: true,
+    value: durationToSeconds,
+  },
+  startDelay: {
+    arg: true,
+    value: durationToSeconds
+  },
+  webCORS: {
+    joinToken: ', ',
+    name: 'CorsDomains'
+  },
+  webPassword: {
+    name: 'FactomdRpcPass',
+  },
+  webTLS: {
+    name: 'FactomdTlsEnabled',
+  },
+  webTLSAddresses: {
+    arg: true,
+    joinToken: ', ',
+    name: 'selfaddr',
+  },
+  webTLSCertificate: {
+    name: 'FactomdTlsPublicCert',
+    value: '/app/tls/public_cert.pem',
+  },
+  webTLSKey: {
+    name: 'FactomdTlsPrivateKey',
     value: '/app/tls/private_key.pem',
   },
-  tlsPublicCert: {
-    name: factomdPrefixOptName,
-    value: '/app/tls/public_cert.pem',
+  webUsername: {
+    name: 'FactomdRpcUser',
   }
 }
 
 const isArg = (values, key) => {
   const {arg = false, squelched = false} = overrides[key] || {}
-  return arg && !squelched
+  return arg && !(isFunction(squelched) ? squelched(values, key) : squelched)
 }
 
 const isOpt = (values, key) => {
   const {arg = false, squelched = false} = overrides[key] || {}
-  return !arg && !squelched
+  return !arg && !(isFunction(squelched) ? squelched(values, key) : squelched)
 }
 
 const getName = (values, key) => {
@@ -148,4 +208,20 @@ const getValue = (values, key) => {
   }
 }
 
-module.exports = {getName, getValue, isArg, isOpt}
+let mergedValues
+const mergeValues = values => {
+  if (!mergedValues) {
+    mergedValues = flow([
+      assignAll,
+      omit(['networks', 'roles']),
+    ])([
+      {},
+      values,
+      get(values.network, values.networks),
+      get(values.role, values.roles),
+    ])
+  }
+  return mergedValues
+}
+
+module.exports = {getName, getNetwork, getValue, isArg, isCustomNetwork, isOpt, mergeValues}

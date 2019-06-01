@@ -1,36 +1,33 @@
-const {get, mergeAll} = require('lodash/fp')
+const {get, isArray, mergeAllWith} = require('lodash/fp')
+
+const mergeValues = mergeAllWith((objValue, srcValue) => isArray(objValue) || isArray(srcValue) ? srcValue : undefined)
 
 const GLOBAL_DEFAULTS = {
-  identityChainId: 'FA1E000000000000000000000000000000000000000000000000000000000000',
-  startDelayInSeconds: 0,
+  startDelay: 0,
 }
 
-const NETWORK_PROFILES = {
-  mainnet: {
-    network: 'main',
-  },
-  testnet: {
-    customBootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
-    customBootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
-    customExchangeRateAuthorityPublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
-    customNetworkId: 'fct_community_test',
-    customNetworkPort: 8110,
-    customSeedUrl: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
-    directoryBlockInSeconds: 600,
-    network: 'custom',
+const NETWORK_DEFAULTS = {
+  fct_community_test: {
+    blockTime: 600,
+    bootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f',
+    bootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
+    identityChain: 'FA1E000000000000000000000000000000000000000000000000000000000000',
+    oraclePublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae',
+    p2pPort: 8110,
+    p2pSeed: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt',
   },
 }
 
-const ROLE_PROFILES = {
-  authority: {
-    startDelayInSeconds: 600,
+const ROLE_DEFAULTS = {
+  AUTHORITY: {
+    startDelay: 600,
   },
 }
 
-const NETWORK_ROLE_PROFILES = {
-  mainnet: {
-    authority: {
-      mainSpecialPeers: [
+const NETWORK_ROLE_DEFAULTS = {
+  MAIN: {
+    AUTHORITY: {
+      p2pSpecialPeers: [
         '52.17.183.121:8108',
         '52.17.153.126:8108',
         '52.19.117.149:8108',
@@ -40,11 +37,11 @@ const NETWORK_ROLE_PROFILES = {
   }
 }
 
-module.exports = ({networkProfile, roleProfile}) =>
-  mergeAll([
+module.exports = ({network, role}) =>
+  mergeValues([
     {},
     GLOBAL_DEFAULTS,
-    get(networkProfile, NETWORK_PROFILES),
-    get(roleProfile, ROLE_PROFILES),
-    get(`${networkProfile}.${roleProfile}`, NETWORK_ROLE_PROFILES)
+    get(network, NETWORK_DEFAULTS),
+    get(role, ROLE_DEFAULTS),
+    get(`${network}.${role}`, NETWORK_ROLE_DEFAULTS)
   ])
