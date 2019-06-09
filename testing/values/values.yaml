@@ -1,4 +1,10 @@
-network: fct_community_test
+network: MAIN
+
+p2pMode: NORMAL
+
+p2pPort: 1234
+
+controlPanelPort: 5566
 
 #role: MAINNET_AUTHORITY
 

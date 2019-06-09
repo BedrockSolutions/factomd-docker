@@ -31,7 +31,7 @@ definitions:
       maximum: 65535
     uri:
       type: string
-      format: uri
+      format: uri-reference
   options:
     additionalProperties: false
     dependencies:
@@ -53,10 +53,6 @@ definitions:
           - $ref: '#/definitions/types/unprivilegedPort'
         description: 'The API server listen port.'
         title: 'PortNumber'
-      balanceHash:
-        type: boolean
-        description: 'Add balance hashes to ACKs.'
-        title: 'balancehash'
       blockTime:
         allOf:
           - $ref: '#/definitions/types/duration'
@@ -90,9 +86,9 @@ definitions:
           - $ref: '#/definitions/types/unprivilegedPort'
         description: 'The Control Panel server listen port.'
         title: 'ControlPanelPort'
-      dbFastBoot:
+      dbNoFastBoot:
         type: boolean
-        description: 'Enable the use of the FastBoot file to cache block validation.'
+        description: 'Disable the use of the FastBoot file to cache block validation.'
         title: 'FastBoot'
       faultTimeout:
         allOf:
@@ -136,6 +132,10 @@ definitions:
           - EMERGENCY
         description: 'Controls the verbosity of log output.'
         title: 'loglvl'
+      noBalanceHash:
+        type: boolean
+        description: 'Disable adding balance hashes to ACKs.'
+        title: 'balancehash'
       oracleChain:
         allOf:
           - $ref: '#/definitions/types/256BitHex'
@@ -146,9 +146,9 @@ definitions:
           - $ref: '#/definitions/types/256BitHex'
         description: 'The public key that validates entries to the oracle chain.'
         title: 'ExchangeRateAuthorityPublicKey'
-      p2pEnable:
+      p2pDisable:
         type: boolean
-        description: 'If disabled, the node will not connect to a network.'
+        description: 'If enabled, the node will not connect to a network.'
         title: 'enablenet'
       p2pFanout:
         allOf:
@@ -164,10 +164,10 @@ definitions:
           - REFUSE
         description: 'Controls which peers the node should allow.'
         title: 'exclusive/exclusiveIn'
-      #    p2pPeerFile:
-      #      type: boolean
-      #      description: 'If enabled, peers will be persisted to disk'
-      #      title: ''
+      p2pPeerFileSuffix:
+        type: string
+        description: 'The filename suffix of the peers file which is added to the current network'
+        title: 'PeersFile'
       p2pPort:
         allOf:
           - $ref: '#/definitions/types/unprivilegedPort'

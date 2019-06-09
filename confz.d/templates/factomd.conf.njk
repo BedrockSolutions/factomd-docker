@@ -1,8 +1,6 @@
 [app]
 Network = {{ this | getNetwork() }}
 
-{%- for key, value in this | mergeValues -%}
-{%- if this | mergeValues | isOpt(key) %}
-{{ this | mergeValues | getName(key) }} = {{ this | mergeValues | getValue(key) -}}
-{%- endif -%}
-{%- endfor -%}
+{% for key, value in this | adaptConfiguration(false) -%}
+{{ key }} = {{ value }}
+{% endfor -%}

@@ -1,4 +1,22 @@
-const {assignAll, capitalize, flow, get, isArray, isFunction, isString, join, omit, toLower, upperFirst} = require('lodash/fp')
+const {
+  assignAll,
+  capitalize,
+  filter,
+  flow,
+  fromPairs,
+  get,
+  isArray,
+  isFunction,
+  isString,
+  join,
+  map,
+  omit,
+  sortBy,
+  toLower,
+  toPairs,
+  upperFirst,
+} = require('lodash/fp')
+
 const ms = require('ms')
 
 const DEFAULT_ARG_NAME = toLower
@@ -11,14 +29,13 @@ const isCustomNetwork = values => getNetwork(values) === 'CUSTOM'
 const networkPrefixOptName = suffix => values =>
   `${capitalize(getNetwork(values))}${suffix}`
 
-const durationToSeconds = value => isString(value) ? ms(value) * 1000 : value
+const durationToSeconds = value => isString(value) ? Math.trunc(ms(value) / 1000) : value
+
+const not = value => !value
 
 const overrides = {
   apiPort: {
     name: 'PortNumber',
-  },
-  balanceHash: {
-    arg: true,
   },
   blockTime: {
     name: 'DirectoryBlockInSeconds',
@@ -37,8 +54,9 @@ const overrides = {
     arg: true,
     name: 'nodename',
   },
-  dbFastBoot: {
+  dbNoFastBoot: {
     name: 'FastBoot',
+    value: not,
   },
   faultTimeout: {
     arg: true,
@@ -70,31 +88,43 @@ const overrides = {
   networks: {
     squelched: true,
   },
+  noBalanceHash: {
+    arg: true,
+    name: 'balancehash',
+    value: not,
+  },
   oracleChain: {
     name: 'ExchangeRateChainId'
   },
   oraclePublicKey: {
     name: 'ExchangeRateAuthorityPublicKey'
   },
-  p2pEnable: {
+  p2pDisable: {
     arg: true,
     name: 'enablenet',
+    value: not,
   },
   p2pFanout: {
     arg: true,
     name: 'broadcastnum',
   },
   p2pMode: {
-    name: ({p2pMode}) => {
-      switch (p2pMode) {
+    arg: true,
+    custom: (_, value) => {
+      switch (value) {
         case 'ACCEPT':
-          return 'exclusive'
+          return {exclusive: true, exclusive_in: false}
+        case 'NORMAL':
+          return {exclusive: false, exclusive_in: false}
         case 'REFUSE':
-          return 'exclusiveIn'
+          return {exclusive: false, exclusive_in: true}
+        default:
+          return {}
       }
     },
-    squelched: ({p2pMode}) => !['ACCEPT', 'REFUSE'].includes(p2pMode),
-    value: value => ['ACCEPT', 'REFUSE'].includes(value),
+  },
+  p2pPeerFileSuffix: {
+    name: 'PeersFile',
   },
   p2pPort: {
     name:  networkPrefixOptName('NetworkPort')
@@ -164,27 +194,17 @@ const overrides = {
   }
 }
 
-const isArg = (values, key) => {
-  const {arg = false, squelched = false} = overrides[key] || {}
-  return arg && !(isFunction(squelched) ? squelched(values, key) : squelched)
-}
+const getName = (key, values) => {
+  const {arg = false, name: overrideName} = overrides[key] || {}
 
-const isOpt = (values, key) => {
-  const {arg = false, squelched = false} = overrides[key] || {}
-  return !arg && !(isFunction(squelched) ? squelched(values, key) : squelched)
-}
-
-const getName = (values, key) => {
-  const {arg = false, name} = overrides[key] || {}
-
-  if (name) {
-    return isFunction(name) ? name(values, key) : name
+  if (overrideName) {
+    return isFunction(overrideName) ? overrideName(values, key) : overrideName
   } else {
     return (arg ? DEFAULT_ARG_NAME : DEFAULT_OPT_NAME)(key)
   }
 }
 
-const getValue = (values, key) => {
+const getValue = (key, value) => {
   const {
     arg = false,
     joinToken = ' ',
@@ -192,11 +212,8 @@ const getValue = (values, key) => {
     value: overrideValue
   } = overrides[key] || {}
 
-  let value
   if (overrideValue) {
-    value = isFunction(overrideValue) ? overrideValue(values[key], key) : overrideValue
-  } else {
-    value = values[key]
+    value = isFunction(overrideValue) ? overrideValue(value, key) : overrideValue
   }
 
   if (isArray(value)) {
@@ -208,20 +225,52 @@ const getValue = (values, key) => {
   }
 }
 
-let mergedValues
 const mergeValues = values => {
-  if (!mergedValues) {
-    mergedValues = flow([
-      assignAll,
-      omit(['networks', 'roles']),
-    ])([
-      {},
-      values,
-      get(values.network, values.networks),
-      get(values.role, values.roles),
-    ])
-  }
-  return mergedValues
+  return flow([
+    assignAll,
+    omit(['networks', 'roles']),
+  ])([
+    {},
+    values,
+    get(values.network, values.networks),
+    get(values.role, values.roles),
+  ])
 }
 
-module.exports = {getName, getNetwork, getValue, isArg, isCustomNetwork, isOpt, mergeValues}
+const createValueFilter = selectArgs => ([key]) => {
+  const {arg = false, squelched = false} = overrides[key] || {}
+  return selectArgs === arg && !squelched
+}
+
+const defaultAdaptor = (key, value, values) => ({
+  [getName(key, values)]: getValue(key, value),
+})
+
+const createAdaptKeyValuePair = values => keyValuePair => {
+  const [key, value] = keyValuePair
+  const adaptor = get(`${key}.custom`, overrides) || defaultAdaptor
+  return adaptor(key, value, values)
+}
+
+const sortObjectKeys = flow([
+  toPairs,
+  sortBy(0),
+  fromPairs,
+])
+
+const adaptConfiguration = (values, selectArgs) => {
+  const mergedValues = mergeValues(values)
+  const valueFilter = createValueFilter(selectArgs)
+  const adaptKeyValuePair = createAdaptKeyValuePair(mergedValues)
+
+  return flow([
+    toPairs,
+    filter(valueFilter),
+    map(adaptKeyValuePair),
+    assignAll,
+    sortObjectKeys,
+  ])(mergedValues)
+}
+
+
+module.exports = {adaptConfiguration, getNetwork, isCustomNetwork}

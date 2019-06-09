@@ -1,6 +1,7 @@
 const test = require('ava')
 const {decode} = require('ini')
-const {random, times} = require('lodash/fp')
+const {isArray, mapValues, random, times} = require('lodash/fp')
+const ms = require('ms')
 
 const {getFileFromContainer, runConfz} = require('./util')
 
@@ -15,12 +16,12 @@ const mergeConfig = config => ({
 
 const getOptions = async config => {
   const factomdConf = await getFileFromContainer('factomd.conf', mergeConfig(config))
-  return decode(factomdConf).app
+  return mapValues(v => v.toString(), decode(factomdConf).app)
 }
 
 const getArgs = async config => {
   const startupScript = await getFileFromContainer('start.sh', mergeConfig(config))
-  const regex = /-([a-zA-Z]+)=("?[^ "]+"?)/g
+  const regex = /-([a-zA-Z_]+)=("?[^ "]+"?)/g
 
   let match, args = {}
   while ((match = regex.exec(startupScript)) != null) {
@@ -31,7 +32,7 @@ const getArgs = async config => {
 }
 
 
-const randomInt = (min = 100000, max = min) => random(min === max ? 0 : min, max)
+const randomInt = (min = 4294967295, max = min) => random(min === max ? 0 : min, max)
 
 const randomSeconds = () => randomInt(0, 1000)
 
@@ -49,86 +50,229 @@ ${randomHexId()}
 -----END ${name}-----`
 }
 
-const optEq = (yamlName, optionName, config, valueOverride) => test(`${yamlName} should map to ${optionName}`, async t => {
-  const options = await getOptions(config)
-  t.is(valueOverride || config[yamlName].toString(), options[optionName].toString())
+const createConfig = ({key, value, config = {}}) => ({
+  [key]: value,
+  ...config,
 })
 
-const argEq = (yamlName, argName, config, valueOverride) => test(`${yamlName} should map to ${argName}`, async t => {
-  const args = await getArgs(config)
-  t.is(valueOverride || config[yamlName].toString(), args[argName])
+const printVal = val => {
+  const str = `${val}`
+  return `${str.slice(0, 20)}${str.length > 20 ? '...' : ''}`
+}
+
+const createTest = ({addAssertions, continueOnError = false, getTestName}) => ({arg = false, ...params}) =>
+  test(getTestName(params), async t => {
+    const getArgsOrOptions = arg ? getArgs : getOptions
+    try {
+      const argsOrOptions = await getArgsOrOptions(createConfig(params))
+      addAssertions({t, argsOrOptions, params})
+    } catch (error) {
+      if (continueOnError) {
+        addAssertions({t, params, error})
+      } else {
+        throw error
+      }
+    }
+  })
+
+const isEqual = createTest({
+  addAssertions: ({t, argsOrOptions, params: {name, value, expected}}) =>
+    t.is(argsOrOptions[name], (expected !== undefined ? expected : value).toString()),
+  getTestName: ({key, value, name, expected}) => {
+    expected = (expected !== undefined ? expected : value).toString()
+    return `{ ${key}: ${printVal(value)} } --> ${name} = ${printVal(expected)}`
+  },
 })
 
-const badCfg = (config, desc) => test(desc, async t => {
-  try {
-    await runConfz(mergeConfig(config))
-    t.fail('No exception was thrown')
-  } catch (err) {
-    t.pass()
-  }
+const isUndefined = createTest({
+  addAssertions: ({t, argsOrOptions, params: {name}}) =>
+    t.is(argsOrOptions[name], undefined),
+  getTestName: ({key, value, name}) =>
+    `{ ${key}: ${printVal(value)} } --> ${name} is not defined`,
 })
 
-// optEq('apiPassword', 'FactomdRpcPass', {apiPassword: randomString(), apiUser: randomString()})
-// badCfg({apiPassword: randomString()}, 'API password but no username should fail')
+const throws = createTest({
+  addAssertions: ({t, error}) => {
+    t.assert(error !== undefined)
+    if (isArray(error)) {
+      error = error[0]
+    }
+    t.assert(error instanceof Error)
+  },
+  continueOnError: true,
+  getTestName: ({key, value}) => `{ ${key}: ${printVal(value)} } --> Throws Error`
+})
 
-optEq('apiPort', 'PortNumber', {apiPort: randomPort()})
-// badCfg({apiPort: 1024}, 'API privileged port should fail')
-//
-// optEq('apiUser', 'FactomdRpcUser', {apiPassword: randomString(), apiUser: randomString()})
-// badCfg({apiUser: randomString()}, 'API user but no password should fail')
-// badCfg({apiPassword: randomString(), apiUser: randomInt()}, 'API user is int should fail')
-//
-// optEq('authorityServerPrivateKey', 'LocalServerPrivKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
-// badCfg({authorityServerPrivateKey: randomHexId()}, 'Auth server private key but no public key should fail')
-// badCfg({authorityServerPrivateKey: randomString(), authorityServerPublicKey: randomHexId()}, 'Auth server private key is not PEM should fail')
-//
-// optEq('authorityServerPublicKey', 'LocalServerPublicKey', {authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomHexId()})
-// badCfg({authorityServerPublicKey: randomHexId()}, 'Auth server public key but no private key should fail')
-// badCfg({authorityServerPrivateKey: randomHexId(), authorityServerPublicKey: randomString()}, 'Auth server public key is not PEM should fail')
-//
-// optEq('brainSwapHeight', 'ChangeAcksHeight', {brainSwapHeight: randomInt(10000, 20000)})
-// badCfg({brainSwapHeight: randomString()}, 'Brain swap height is a string should fail')
-//
-// argEq('broadcastNumber', 'broadcastnum', {broadcastNumber: randomInt(1, 10000)})
-// badCfg({broadcastNumber: 0}, 'Broadcast number is zero should fail')
-// badCfg({broadcastNumber: -randomInt(1, 10000)}, 'Broadcast number is negative should fail')
-//
-// optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'disabled'})
-// // optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'readonly'})
-// // optEq('controlPanelMode', 'ControlPanelSetting', {controlPanelMode: 'readwrite'})
-// badCfg({controlPanelMode: randomString()}, 'Control panel mode is random string should fail')
-//
-// optEq('controlPanelPort', 'ControlPanelPort', {controlPanelPort: randomPort()})
-// badCfg({controlPanelPort: randomInt(1, 1024)}, 'Control panel port is privileged should fail')
-//
-// optEq('corsDomains', 'CorsDomains', {corsDomains: ['foo.com', 'bar.com']}, 'foo.com, bar.com')
-// optEq('customBootstrapIdentity', 'CustomBootstrapIdentity', {customBootstrapIdentity: randomHexId()})
-// optEq('customBootstrapKey', 'CustomBootstrapKey', {customBootstrapKey: randomHexId()})
-// optEq('customExchangeRateAuthorityPublicKey', 'ExchangeRateAuthorityPublicKey', {customExchangeRateAuthorityPublicKey: randomHexId()})
-// argEq('customNetworkId', 'customnet', {customNetworkId: randomString()})
-// optEq('customNetworkPort', 'CustomNetworkPort', {customNetworkPort: randomPort()})
-// optEq('customSeedUrl', 'CustomSeedURL', {customSeedUrl: 'http://foo.com'})
-// optEq('customSpecialPeers', 'CustomSpecialPeers', {customSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-// optEq('directoryBlockInSeconds', 'DirectoryBlockInSeconds', {directoryBlockInSeconds: randomSeconds()})
-// optEq('fastBoot', 'FastBoot', {fastBoot: true})
-// argEq('faultTimeoutInSeconds', 'faulttimeout', {faultTimeoutInSeconds: randomSeconds()})
-// optEq('identityChainId', 'IdentityChainID', {identityChainId: randomHexId()})
-// optEq('localNetworkPort', 'LocalNetworkPort', {localNetworkPort: randomPort()})
-// optEq('localSeedUrl', 'LocalSeedURL', {localSeedUrl: 'http://foo.com'})
-// optEq('localSpecialPeers', 'LocalSpecialPeers', {localSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-// argEq('logLevel', 'loglvl', {logLevel: 'panic'})
-// optEq('mainNetworkPort', 'MainNetworkPort', {mainNetworkPort: randomPort()})
-// optEq('mainSeedUrl', 'MainSeedURL', {mainSeedUrl: 'http://foo.com'})
-// optEq('mainSpecialPeers', 'MainSpecialPeers', {mainSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-// optEq('network', 'Network', {network: 'test'}, 'TEST')
-// argEq('nodeName', 'nodename', {nodeName: randomString()})
-// argEq('specialPeersDialOnly', 'exclusive', {specialPeersDialOnly: true})
-// argEq('specialPeersOnly', 'exclusiveIn', {specialPeersOnly: true})
-// argEq('startDelayInSeconds', 'startdelay', {startDelayInSeconds: randomSeconds()})
-// optEq('testNetworkPort', 'TestNetworkPort', {testNetworkPort: randomPort()})
-// optEq('testSeedUrl', 'TestSeedURL', {testSeedUrl: 'http://foo.com'})
-// optEq('testSpecialPeers', 'TestSpecialPeers', {testSpecialPeers: ['1.2.3.4:1025', '6.7.8.9:5000']}, '1.2.3.4:1025 6.7.8.9:5000')
-// optEq('tlsEnabled', 'FactomdTlsEnabled', {tlsEnabled: false})
-// optEq('tlsPrivateKey', 'FactomdTlsPrivateKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/private_key.pem')
-// optEq('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/public_cert.pem')
+const is256BitHex = params => {
+  isEqual({value: randomHexId(), ...params})
+  throws({value: null, ...params})
+  throws({value: randomHexId().slice(1), ...params})
+  throws({value: `${randomHexId()}0`, ...params})
+  throws({value: 'abc', ...params})
+  throws({value: 123, ...params})
+}
 
+const is32BitInteger = params => {
+  isEqual({value: randomInt(), ...params})
+  throws({value: -1, ...params})
+  throws({value: 4294967296, ...params})
+  throws({value: 'abc', ...params})
+}
+
+const isBlock = params => {
+  isEqual({value: randomInt(0, 9999999), ...params})
+  throws({value: -1, ...params})
+  throws({value: null, ...params})
+  throws({value: 10000000, ...params})
+  throws({value: 'abc', ...params})
+}
+
+const isBoolean = ({inverted = false, ...params}) => {
+  isEqual({value: true, expected: !inverted, ...params})
+  isEqual({value: false, expected: inverted, ...params})
+  throws({value: null, ...params})
+  throws({value: 'abc', ...params})
+  throws({value: 123, ...params})
+}
+
+const isDuration = params => {
+  const value = randomInt(0, 9999)
+  isEqual({value: `${value}s`, expected: Math.trunc(ms(`${value}s`) / 1000).toString(), ...params})
+  isEqual({value: `${value}m`, expected: Math.trunc(ms(`${value}m`) / 1000).toString(), ...params})
+  isEqual({value: `${value}h`, expected: Math.trunc(ms(`${value}h`) / 1000).toString(), ...params})
+  throws({value: null, ...params})
+  isEqual({value: randomSeconds(), ...params})
+  throws({value: -1, ...params})
+  throws({value: '1x', ...params})
+}
+
+const isEnum = ({values, ...params}) => {
+  values.forEach(value => isEqual({value, ...params}))
+  throws({value: null, ...params})
+  throws({value: 'abc', ...params})
+  throws({value: 123, ...params})
+}
+
+const isHostnameArray = ({separator = ' ', ...params}) => {
+  const arr = ['a.com', 'b.net', 'c.org', 'localhost']
+  isEqual({value: arr, expected: arr.join(separator), ...params})
+  throws({value: null, ...params})
+  throws({value: 'abc', ...params})
+  throws({value: 123, ...params})
+}
+
+const isString = params => {
+  isEqual({ value: randomString(), ...params })
+  isEqual({ value: 'abc', ...params })
+  throws({value: null, ...params})
+  throws({value: 123, ...params})
+  throws({value: false, ...params})
+}
+
+const isUnprivilegedPort = params => {
+  isEqual({ value: randomPort(), ...params })
+  throws({value: null, ...params})
+  throws({value: 1024, ...params})
+  throws({value: 65536, ...params})
+}
+
+const isURI = params => {
+  isEqual({value: 'http://www.foo.com/bar.html', ...params})
+  isEqual({value: '../foo/bar.html', ...params})
+  isEqual({value: 'file:///foo/bar.html', ...params})
+  throws({value: null, ...params})
+  throws({value: 123, ...params})
+}
+
+isUnprivilegedPort({ key: 'apiPort', name: 'PortNumber' })
+
+isDuration({ key: 'blockTime', name: 'DirectoryBlockInSeconds' })
+
+is256BitHex({key: 'bootstrapIdentity', name: 'CustomBootstrapIdentity'})
+
+is256BitHex({key: 'bootstrapKey', name: 'CustomBootstrapKey'})
+
+isEnum({ key: 'controlPanel', values: ['DISABLED', 'READONLY', 'READWRITE'], name: 'ControlPanelSetting' })
+
+isString({key: 'controlPanelName', name: 'nodename', arg: true})
+
+isUnprivilegedPort({ key: 'controlPanelPort', name: 'ControlPanelPort' })
+
+isBoolean({key: 'dbNoFastBoot', name: 'FastBoot', inverted: true})
+
+isDuration({key: 'faultTimeout', name: 'faulttimeout', arg: true})
+
+isBoolean({key: 'forceFollower', name: 'follower', arg: true})
+
+isBlock({ key: 'identityActivationHeight', name: 'ChangeAcksHeight' })
+
+is256BitHex({key: 'identityChain', name: 'IdentityChainID'})
+
+is256BitHex({key: 'identityPrivateKey', name: 'LocalServerPrivKey', config: {identityPublicKey: randomHexId()}})
+throws({key: 'identityPrivateKey', value: randomHexId()})
+
+is256BitHex({key: 'identityPublicKey', name: 'LocalServerPublicKey', config: {identityPrivateKey: randomHexId()}})
+throws({key: 'identityPublicKey', value: randomHexId()})
+
+isEnum({key: 'logLevel', values: ['NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'], name: 'loglvl', arg: true})
+
+isEqual({key: 'network', value: 'MAIN', name: 'Network'})
+isUndefined({key: 'network', value: 'MAIN', name: 'customnet', arg: true})
+isEqual({key: 'network', value: 'LOCAL', name: 'Network'})
+isUndefined({key: 'network', value: 'LOCAL', name: 'customnet', arg: true})
+isEqual({key: 'network', value: 'custom_network', name: 'Network', expected: 'CUSTOM'})
+isEqual({key: 'network', value: 'custom_network', name: 'customnet', arg: true})
+throws({key: 'network', value: null})
+throws({key: 'network', value: 123})
+
+isBoolean({key: 'noBalanceHash', name: 'balancehash', arg: true, inverted: true})
+
+is256BitHex({key: 'oracleChain', name: 'ExchangeRateChainId'})
+
+is256BitHex({key: 'oraclePublicKey', name: 'ExchangeRateAuthorityPublicKey'})
+
+isBoolean({key: 'p2pDisable', name: 'enablenet', arg: true, inverted: true})
+
+is32BitInteger({ key: 'p2pFanout', name: 'broadcastnum', arg: true})
+throws({ key: 'p2pFanout', value: 0})
+
+isEqual({key: 'p2pMode', value: 'NORMAL', name: 'exclusive', expected: 'false', arg: true})
+isEqual({key: 'p2pMode', value: 'NORMAL', name: 'exclusive_in', expected: 'false', arg: true})
+isEqual({key: 'p2pMode', value: 'ACCEPT', name: 'exclusive', expected: 'true', arg: true})
+isEqual({key: 'p2pMode', value: 'ACCEPT', name: 'exclusive_in', expected: 'false', arg: true})
+isEqual({key: 'p2pMode', value: 'REFUSE', name: 'exclusive', expected: 'false', arg: true})
+isEqual({key: 'p2pMode', value: 'REFUSE', name: 'exclusive_in', expected: 'true', arg: true})
+
+isEqual({key: 'p2pPort', value: 5000, name: 'MainNetworkPort', config: {network: 'MAIN'}})
+isEqual({key: 'p2pPort', value: 5000, name: 'LocalNetworkPort', config: {network: 'LOCAL'}})
+isEqual({key: 'p2pPort', value: 5000, name: 'CustomNetworkPort', config: {network: 'custom_network'}})
+isUnprivilegedPort({key: 'p2pPort', name: 'MainNetworkPort'})
+
+isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'MainSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'MAIN'}})
+isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'LocalSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'LOCAL'}})
+isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'CustomSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'custom_network'}})
+throws({key: 'p2pSpecialPeers', value: null})
+throws({key: 'p2pSpecialPeers', value: 'abc'})
+throws({key: 'p2pSpecialPeers', value: 123})
+
+isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'MainSeedURL', config: {network: 'MAIN'}})
+isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'LocalSeedURL', config: {network: 'LOCAL'}})
+isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'CustomSeedURL', config: {network: 'custom_network'}})
+isURI({key: 'p2pSeed', name: 'MainSeedURL'})
+
+isDuration({key: 'startDelay', name: 'startdelay', arg: true})
+
+isHostnameArray({key: 'webCORS', name: 'CorsDomains', separator: ', '})
+
+isString({ key: 'webPassword', name: 'FactomdRpcPass', config: {webUsername: randomString()} })
+throws({key: 'webPassword', value: randomHexId()})
+
+isBoolean({key: 'webTLS', name: 'FactomdTlsEnabled'})
+
+isString({ key: 'webUsername', name: 'FactomdRpcUser', config: {webPassword: randomString()} })
+throws({key: 'webUsername', value: randomHexId()})
+
+
+
+// // optEq('tlsPrivateKey', 'FactomdTlsPrivateKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/private_key.pem')
+// // optEq('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/public_cert.pem')rt', 'LocalNetworkPort', {localNetworkPort: randomPort()})
