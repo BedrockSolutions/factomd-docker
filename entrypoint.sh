@@ -37,7 +37,6 @@ case ${1} in
     ;;
 
   shell)
-    ./bin/confz run
     exec /bin/bash
     ;;
 
