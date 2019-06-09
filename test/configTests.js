@@ -187,6 +187,10 @@ const isHostnameArray = ({separator = ', ', ...params}) => {
   isStringArray(params)
 }
 
+const isPEMData = params => {
+  isEqual({value: randomPem(), ...params})
+}
+
 const isURIArray = ({separator = ', ', ...params}) => {
   const arr = ['http://a.com', 'https://b.net', 'http://localhost:8080']
   isEqual({value: arr, expected: arr.join(separator), ...params})
@@ -202,106 +206,108 @@ const isURIReference = params => {
   throws({value: 123, ...params})
 }
 
-isUnprivilegedPort({ key: 'apiPort', name: 'PortNumber' })
+// isUnprivilegedPort({ key: 'apiPort', name: 'PortNumber' })
+//
+// isDuration({ key: 'blockTime', name: 'DirectoryBlockInSeconds' })
+//
+// is256BitHex({key: 'bootstrapIdentity', name: 'CustomBootstrapIdentity'})
+//
+// is256BitHex({key: 'bootstrapKey', name: 'CustomBootstrapKey'})
+//
+// isEnum({ key: 'controlPanel', values: ['DISABLED', 'READONLY', 'READWRITE'], name: 'ControlPanelSetting' })
+//
+// isString({key: 'controlPanelName', name: 'nodename', arg: true})
+//
+// isUnprivilegedPort({ key: 'controlPanelPort', name: 'ControlPanelPort' })
+//
+// isBoolean({key: 'dbNoFastBoot', name: 'FastBoot', inverted: true})
+//
+// isEnum({key: 'dbType', values: ['LDB', 'BOLT', 'MAP'], name: 'DBType'})
+//
+// isDuration({key: 'faultTimeout', name: 'faulttimeout', arg: true})
+//
+// isBoolean({key: 'forceFollower', name: 'follower', arg: true})
+//
+// isBlock({ key: 'identityActivationHeight', name: 'ChangeAcksHeight' })
+//
+// is256BitHex({key: 'identityChain', name: 'IdentityChainID'})
+//
+// is256BitHex({key: 'identityPrivateKey', name: 'LocalServerPrivKey', config: {identityPublicKey: randomHexId()}})
+// throws({key: 'identityPrivateKey', value: randomHexId()})
+//
+// is256BitHex({key: 'identityPublicKey', name: 'LocalServerPublicKey', config: {identityPrivateKey: randomHexId()}})
+// throws({key: 'identityPublicKey', value: randomHexId()})
+//
+// isEnum({key: 'logLevel', values: ['NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'], name: 'loglvl', arg: true})
+//
+// isEqual({key: 'network', value: 'MAIN', name: 'Network'})
+// isUndefined({key: 'network', value: 'MAIN', name: 'customnet', arg: true})
+// isEqual({key: 'network', value: 'LOCAL', name: 'Network'})
+// isUndefined({key: 'network', value: 'LOCAL', name: 'customnet', arg: true})
+// isEqual({key: 'network', value: 'custom_network', name: 'Network', expected: 'CUSTOM'})
+// isEqual({key: 'network', value: 'custom_network', name: 'customnet', arg: true})
+// throws({key: 'network', value: null})
+// throws({key: 'network', value: 123})
+//
+// isBoolean({key: 'noBalanceHash', name: 'balancehash', arg: true, inverted: true})
+//
+// is256BitHex({key: 'oracleChain', name: 'ExchangeRateChainId'})
+//
+// is256BitHex({key: 'oraclePublicKey', name: 'ExchangeRateAuthorityPublicKey'})
+//
+// isBoolean({key: 'p2pDisable', name: 'enablenet', arg: true, inverted: true})
+//
+// is32BitInteger({ key: 'p2pFanout', name: 'broadcastnum', arg: true})
+// throws({ key: 'p2pFanout', value: 0})
+//
+// isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive', expected: 'false', arg: true})
+// isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive_in', expected: 'false', arg: true})
+// isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive', expected: 'true', arg: true})
+// isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive_in', expected: 'false', arg: true})
+// isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive', expected: 'false', arg: true})
+// isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive_in', expected: 'true', arg: true})
+//
+// isEqual({key: 'p2pPort', value: 5000, name: 'MainNetworkPort', config: {network: 'MAIN'}})
+// isEqual({key: 'p2pPort', value: 5000, name: 'LocalNetworkPort', config: {network: 'LOCAL'}})
+// isEqual({key: 'p2pPort', value: 5000, name: 'CustomNetworkPort', config: {network: 'custom_network'}})
+// isUnprivilegedPort({key: 'p2pPort', name: 'MainNetworkPort'})
+//
+// isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'MainSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'MAIN'}})
+// isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'LocalSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'LOCAL'}})
+// isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'CustomSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'custom_network'}})
+// isStringArray({key: 'p2pSpecialPeers', name: 'MainSpecialPeers', config: {network: 'MAIN'}})
+//
+// isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'MainSeedURL', config: {network: 'MAIN'}})
+// isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'LocalSeedURL', config: {network: 'LOCAL'}})
+// isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'CustomSeedURL', config: {network: 'custom_network'}})
+// isURIReference({key: 'p2pSeed', name: 'MainSeedURL'})
+//
+// isBoolean(({key: 'pprofExpose', name: 'exposeprofiler', arg: true}))
+//
+// is32BitInteger({key: 'pprofMPR', name: 'mpr', arg: true})
+//
+// isUnprivilegedPort({key: 'pprofPort', name: 'logPort', arg: true})
+//
+// isDuration({key: 'roundTimeout', name: 'roundtimeout', arg: true})
+//
+// isDuration({key: 'startDelay', name: 'startdelay', arg: true})
+//
+// isURIArray({key: 'webCORS', name: 'CorsDomains'})
+// isEqual({key: 'webCORS', value: ['*'], name: 'CorsDomains'})
+// throws({key: 'webCORS', value: ['*', '*'], name: 'CorsDomains'})
+// throws({key: 'webCORS', value: ['*', 'http://a.com'], name: 'CorsDomains'})
+//
+// isString({ key: 'webPassword', name: 'FactomdRpcPass', config: {webUsername: randomString()} })
+// throws({key: 'webPassword', value: randomHexId()})
+//
+// isBoolean({key: 'webTLS', name: 'FactomdTlsEnabled'})
+//
+// isHostnameArray({key: 'webTLSAddresses', name: 'selfaddr', arg: true})
+//
+isPEMData({key: 'webTLSCertificate', name: 'FactomdTlsPublicCert'})
 
-isDuration({ key: 'blockTime', name: 'DirectoryBlockInSeconds' })
-
-is256BitHex({key: 'bootstrapIdentity', name: 'CustomBootstrapIdentity'})
-
-is256BitHex({key: 'bootstrapKey', name: 'CustomBootstrapKey'})
-
-isEnum({ key: 'controlPanel', values: ['DISABLED', 'READONLY', 'READWRITE'], name: 'ControlPanelSetting' })
-
-isString({key: 'controlPanelName', name: 'nodename', arg: true})
-
-isUnprivilegedPort({ key: 'controlPanelPort', name: 'ControlPanelPort' })
-
-isBoolean({key: 'dbNoFastBoot', name: 'FastBoot', inverted: true})
-
-isEnum({key: 'dbType', values: ['LDB', 'BOLT', 'MAP'], name: 'DBType'})
-
-isDuration({key: 'faultTimeout', name: 'faulttimeout', arg: true})
-
-isBoolean({key: 'forceFollower', name: 'follower', arg: true})
-
-isBlock({ key: 'identityActivationHeight', name: 'ChangeAcksHeight' })
-
-is256BitHex({key: 'identityChain', name: 'IdentityChainID'})
-
-is256BitHex({key: 'identityPrivateKey', name: 'LocalServerPrivKey', config: {identityPublicKey: randomHexId()}})
-throws({key: 'identityPrivateKey', value: randomHexId()})
-
-is256BitHex({key: 'identityPublicKey', name: 'LocalServerPublicKey', config: {identityPrivateKey: randomHexId()}})
-throws({key: 'identityPublicKey', value: randomHexId()})
-
-isEnum({key: 'logLevel', values: ['NONE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'], name: 'loglvl', arg: true})
-
-isEqual({key: 'network', value: 'MAIN', name: 'Network'})
-isUndefined({key: 'network', value: 'MAIN', name: 'customnet', arg: true})
-isEqual({key: 'network', value: 'LOCAL', name: 'Network'})
-isUndefined({key: 'network', value: 'LOCAL', name: 'customnet', arg: true})
-isEqual({key: 'network', value: 'custom_network', name: 'Network', expected: 'CUSTOM'})
-isEqual({key: 'network', value: 'custom_network', name: 'customnet', arg: true})
-throws({key: 'network', value: null})
-throws({key: 'network', value: 123})
-
-isBoolean({key: 'noBalanceHash', name: 'balancehash', arg: true, inverted: true})
-
-is256BitHex({key: 'oracleChain', name: 'ExchangeRateChainId'})
-
-is256BitHex({key: 'oraclePublicKey', name: 'ExchangeRateAuthorityPublicKey'})
-
-isBoolean({key: 'p2pDisable', name: 'enablenet', arg: true, inverted: true})
-
-is32BitInteger({ key: 'p2pFanout', name: 'broadcastnum', arg: true})
-throws({ key: 'p2pFanout', value: 0})
-
-isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive', expected: 'false', arg: true})
-isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive_in', expected: 'false', arg: true})
-isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive', expected: 'true', arg: true})
-isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive_in', expected: 'false', arg: true})
-isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive', expected: 'false', arg: true})
-isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive_in', expected: 'true', arg: true})
-
-isEqual({key: 'p2pPort', value: 5000, name: 'MainNetworkPort', config: {network: 'MAIN'}})
-isEqual({key: 'p2pPort', value: 5000, name: 'LocalNetworkPort', config: {network: 'LOCAL'}})
-isEqual({key: 'p2pPort', value: 5000, name: 'CustomNetworkPort', config: {network: 'custom_network'}})
-isUnprivilegedPort({key: 'p2pPort', name: 'MainNetworkPort'})
-
-isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'MainSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'MAIN'}})
-isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'LocalSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'LOCAL'}})
-isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'CustomSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'custom_network'}})
-isStringArray({key: 'p2pSpecialPeers', name: 'MainSpecialPeers', config: {network: 'MAIN'}})
-
-isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'MainSeedURL', config: {network: 'MAIN'}})
-isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'LocalSeedURL', config: {network: 'LOCAL'}})
-isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'CustomSeedURL', config: {network: 'custom_network'}})
-isURIReference({key: 'p2pSeed', name: 'MainSeedURL'})
-
-isBoolean(({key: 'pprofExpose', name: 'exposeprofiler', arg: true}))
-
-is32BitInteger({key: 'pprofMPR', name: 'mpr', arg: true})
-
-isUnprivilegedPort({key: 'pprofPort', name: 'logPort', arg: true})
-
-isDuration({key: 'roundTimeout', name: 'roundtimeout', arg: true})
-
-isDuration({key: 'startDelay', name: 'startdelay', arg: true})
-
-isURIArray({key: 'webCORS', name: 'CorsDomains'})
-isEqual({key: 'webCORS', value: ['*'], name: 'CorsDomains'})
-throws({key: 'webCORS', value: ['*', '*'], name: 'CorsDomains'})
-throws({key: 'webCORS', value: ['*', 'http://a.com'], name: 'CorsDomains'})
-
-isString({ key: 'webPassword', name: 'FactomdRpcPass', config: {webUsername: randomString()} })
-throws({key: 'webPassword', value: randomHexId()})
-
-isBoolean({key: 'webTLS', name: 'FactomdTlsEnabled'})
-
-isHostnameArray({key: 'webTLSAddresses', name: 'selfaddr', arg: true})
-
-isString({ key: 'webUsername', name: 'FactomdRpcUser', config: {webPassword: randomString()} })
-throws({key: 'webUsername', value: randomHexId()})
+// isString({ key: 'webUsername', name: 'FactomdRpcUser', config: {webPassword: randomString()} })
+// throws({key: 'webUsername', value: randomHexId()})
 
 
 
