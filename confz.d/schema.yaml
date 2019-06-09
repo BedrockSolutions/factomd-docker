@@ -44,10 +44,10 @@ definitions:
         - identityPrivateKey
       webPassword:
         - webUsername
-      webTLSPrivateKey:
+      webTLSKey:
         - webTLSCertificate
       webTLSCertificate:
-        - webTLSPrivateKey
+        - webTLSKey
       webUsername:
         - webPassword
     properties:

@@ -4,7 +4,11 @@ p2pConnectionPolicy: NORMAL
 
 p2pPort: 1234
 
-controlPanelPort: 5566
+controlPanelPort: 4654690
+
+webCORS:
+  - 'http://foo.com'
+  - 'http://bar.com'
 
 #role: MAINNET_AUTHORITY
 
