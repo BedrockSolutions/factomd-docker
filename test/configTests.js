@@ -21,12 +21,12 @@ const getOptions = async config => {
 
 const getArgs = async config => {
   const startupScript = await getFileFromContainer('start.sh', mergeConfig(config))
-  const regex = /-([a-zA-Z_]+)=("?[^ "]+"?)/g
+  const regex = /-([a-zA-Z_]+)=(?:(?:"([^"]+)")|([^ "]+))/g
 
   let match, args = {}
   while ((match = regex.exec(startupScript)) != null) {
-    const [_, key, value] = match
-    args[key] = value
+    const [_, key, value1, value2] = match
+    args[key] = value1 || value2
   }
   return args
 }
@@ -56,8 +56,8 @@ const createConfig = ({key, value, config = {}}) => ({
 })
 
 const printVal = val => {
-  const str = `${val}`
-  return `${str.slice(0, 20)}${str.length > 20 ? '...' : ''}`
+  const str = JSON.stringify(val)
+  return `${str.slice(0, 25)}${str.length > 25 ? '...' : ''}`
 }
 
 const createTest = ({addAssertions, continueOnError = false, getTestName}) => ({arg = false, ...params}) =>
@@ -153,20 +153,21 @@ const isEnum = ({values, ...params}) => {
   throws({value: 123, ...params})
 }
 
-const isHostnameArray = ({separator = ' ', ...params}) => {
-  const arr = ['a.com', 'b.net', 'c.org', 'localhost']
-  isEqual({value: arr, expected: arr.join(separator), ...params})
-  throws({value: null, ...params})
-  throws({value: 'abc', ...params})
-  throws({value: 123, ...params})
-}
-
 const isString = params => {
   isEqual({ value: randomString(), ...params })
   isEqual({ value: 'abc', ...params })
   throws({value: null, ...params})
   throws({value: 123, ...params})
   throws({value: false, ...params})
+}
+
+const isStringArray = params => {
+  throws({value: [123], ...params})
+  throws({value: [''], ...params})
+  throws({value: [], ...params})
+  throws({value: null, ...params})
+  throws({value: 'abc', ...params})
+  throws({value: 123, ...params})
 }
 
 const isUnprivilegedPort = params => {
@@ -176,7 +177,24 @@ const isUnprivilegedPort = params => {
   throws({value: 65536, ...params})
 }
 
-const isURI = params => {
+const isHostnameArray = ({separator = ', ', ...params}) => {
+  const arr = ['a.com', 'b.net', 'localhost', '12.34.56.78']
+  isEqual({value: arr, expected: arr.join(separator), ...params})
+  throws({value: ['a.com', 'a.com'], ...params})
+  throws({value: ['-a.com'], ...params})
+  throws({value: ['a.com:8080'], ...params})
+  throws({value: ['http://a.com'], ...params})
+  isStringArray(params)
+}
+
+const isURIArray = ({separator = ', ', ...params}) => {
+  const arr = ['http://a.com', 'https://b.net', 'http://localhost:8080']
+  isEqual({value: arr, expected: arr.join(separator), ...params})
+  throws({value: ['http://a.com', 'http://a.com'], ...params})
+  isStringArray(params)
+}
+
+const isURIReference = params => {
   isEqual({value: 'http://www.foo.com/bar.html', ...params})
   isEqual({value: '../foo/bar.html', ...params})
   isEqual({value: 'file:///foo/bar.html', ...params})
@@ -199,6 +217,8 @@ isString({key: 'controlPanelName', name: 'nodename', arg: true})
 isUnprivilegedPort({ key: 'controlPanelPort', name: 'ControlPanelPort' })
 
 isBoolean({key: 'dbNoFastBoot', name: 'FastBoot', inverted: true})
+
+isEnum({key: 'dbType', values: ['LDB', 'BOLT', 'MAP'], name: 'DBType'})
 
 isDuration({key: 'faultTimeout', name: 'faulttimeout', arg: true})
 
@@ -236,12 +256,12 @@ isBoolean({key: 'p2pDisable', name: 'enablenet', arg: true, inverted: true})
 is32BitInteger({ key: 'p2pFanout', name: 'broadcastnum', arg: true})
 throws({ key: 'p2pFanout', value: 0})
 
-isEqual({key: 'p2pMode', value: 'NORMAL', name: 'exclusive', expected: 'false', arg: true})
-isEqual({key: 'p2pMode', value: 'NORMAL', name: 'exclusive_in', expected: 'false', arg: true})
-isEqual({key: 'p2pMode', value: 'ACCEPT', name: 'exclusive', expected: 'true', arg: true})
-isEqual({key: 'p2pMode', value: 'ACCEPT', name: 'exclusive_in', expected: 'false', arg: true})
-isEqual({key: 'p2pMode', value: 'REFUSE', name: 'exclusive', expected: 'false', arg: true})
-isEqual({key: 'p2pMode', value: 'REFUSE', name: 'exclusive_in', expected: 'true', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive', expected: 'false', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'NORMAL', name: 'exclusive_in', expected: 'false', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive', expected: 'true', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'ACCEPT', name: 'exclusive_in', expected: 'false', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive', expected: 'false', arg: true})
+isEqual({key: 'p2pConnectionPolicy', value: 'REFUSE', name: 'exclusive_in', expected: 'true', arg: true})
 
 isEqual({key: 'p2pPort', value: 5000, name: 'MainNetworkPort', config: {network: 'MAIN'}})
 isEqual({key: 'p2pPort', value: 5000, name: 'LocalNetworkPort', config: {network: 'LOCAL'}})
@@ -251,28 +271,39 @@ isUnprivilegedPort({key: 'p2pPort', name: 'MainNetworkPort'})
 isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'MainSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'MAIN'}})
 isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'LocalSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'LOCAL'}})
 isEqual({key: 'p2pSpecialPeers', value: ['12.34.56.78:1234'], name: 'CustomSpecialPeers', expected: '12.34.56.78:1234', config: {network: 'custom_network'}})
-throws({key: 'p2pSpecialPeers', value: null})
-throws({key: 'p2pSpecialPeers', value: 'abc'})
-throws({key: 'p2pSpecialPeers', value: 123})
+isStringArray({key: 'p2pSpecialPeers', name: 'MainSpecialPeers', config: {network: 'MAIN'}})
 
 isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'MainSeedURL', config: {network: 'MAIN'}})
 isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'LocalSeedURL', config: {network: 'LOCAL'}})
 isEqual({key: 'p2pSeed', value: 'http://www.bar.com/foo.html', name: 'CustomSeedURL', config: {network: 'custom_network'}})
-isURI({key: 'p2pSeed', name: 'MainSeedURL'})
+isURIReference({key: 'p2pSeed', name: 'MainSeedURL'})
+
+isBoolean(({key: 'pprofExpose', name: 'exposeprofiler', arg: true}))
+
+is32BitInteger({key: 'pprofMPR', name: 'mpr', arg: true})
+
+isUnprivilegedPort({key: 'pprofPort', name: 'logPort', arg: true})
+
+isDuration({key: 'roundTimeout', name: 'roundtimeout', arg: true})
 
 isDuration({key: 'startDelay', name: 'startdelay', arg: true})
 
-isHostnameArray({key: 'webCORS', name: 'CorsDomains', separator: ', '})
+isURIArray({key: 'webCORS', name: 'CorsDomains'})
+isEqual({key: 'webCORS', value: ['*'], name: 'CorsDomains'})
+throws({key: 'webCORS', value: ['*', '*'], name: 'CorsDomains'})
+throws({key: 'webCORS', value: ['*', 'http://a.com'], name: 'CorsDomains'})
 
 isString({ key: 'webPassword', name: 'FactomdRpcPass', config: {webUsername: randomString()} })
 throws({key: 'webPassword', value: randomHexId()})
 
 isBoolean({key: 'webTLS', name: 'FactomdTlsEnabled'})
 
+isHostnameArray({key: 'webTLSAddresses', name: 'selfaddr', arg: true})
+
 isString({ key: 'webUsername', name: 'FactomdRpcUser', config: {webPassword: randomString()} })
 throws({key: 'webUsername', value: randomHexId()})
 
 
 
-// // optEq('tlsPrivateKey', 'FactomdTlsPrivateKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/private_key.pem')
-// // optEq('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/public_cert.pem')rt', 'LocalNetworkPort', {localNetworkPort: randomPort()})
+// optEq('tlsPrivateKey', 'FactomdTlsPrivateKey', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/private_key.pem')
+// optEq('tlsPublicCert', 'FactomdTlsPublicCert', {tlsPrivateKey: randomPem(), tlsPublicCert: randomPem()}, '/app/tls/public_cert.pem')rt', 'LocalNetworkPort', {localNetworkPort: randomPort()})

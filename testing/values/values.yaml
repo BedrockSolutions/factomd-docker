@@ -1,6 +1,6 @@
 network: MAIN
 
-p2pMode: NORMAL
+p2pConnectionPolicy: NORMAL
 
 p2pPort: 1234
 

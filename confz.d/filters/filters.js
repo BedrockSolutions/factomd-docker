@@ -58,6 +58,9 @@ const overrides = {
     name: 'FastBoot',
     value: not,
   },
+  dbType: {
+    name: 'DBType',
+  },
   faultTimeout: {
     arg: true,
     value: durationToSeconds,
@@ -104,11 +107,7 @@ const overrides = {
     name: 'enablenet',
     value: not,
   },
-  p2pFanout: {
-    arg: true,
-    name: 'broadcastnum',
-  },
-  p2pMode: {
+  p2pConnectionPolicy: {
     arg: true,
     custom: (_, value) => {
       switch (value) {
@@ -122,6 +121,10 @@ const overrides = {
           return {}
       }
     },
+  },
+  p2pFanout: {
+    arg: true,
+    name: 'broadcastnum',
   },
   p2pPeerFileSuffix: {
     name: 'PeersFile',

@@ -15,7 +15,7 @@ definitions:
       oneOf:
         - $ref: '#/definitions/types/32BitInteger'
         - type: string
-          pattern: '^\d+(?:ms|s|m|h|d)$'
+          pattern: '^\d+(?:s|m|h|d)$'
     hostname:
       type: string
       format: hostname
@@ -30,6 +30,9 @@ definitions:
       minimum: 1025
       maximum: 65535
     uri:
+      type: string
+      format: uri
+    uri-reference:
       type: string
       format: uri-reference
   options:
@@ -90,6 +93,14 @@ definitions:
         type: boolean
         description: 'Disable the use of the FastBoot file to cache block validation.'
         title: 'FastBoot'
+      dbType:
+        type: string
+        enum:
+          - LDB
+          - BOLT
+          - MAP
+        description: 'The database architecture to use'
+        title: 'DBType'
       faultTimeout:
         allOf:
           - $ref: '#/definitions/types/duration'
@@ -146,6 +157,14 @@ definitions:
           - $ref: '#/definitions/types/256BitHex'
         description: 'The public key that validates entries to the oracle chain.'
         title: 'ExchangeRateAuthorityPublicKey'
+      p2pConnectionPolicy:
+        type: string
+        enum:
+          - NORMAL
+          - ACCEPT
+          - REFUSE
+        description: 'Controls which peers the node should allow.'
+        title: 'exclusive/exclusiveIn'
       p2pDisable:
         type: boolean
         description: 'If enabled, the node will not connect to a network.'
@@ -156,14 +175,6 @@ definitions:
         minimum: 1
         description: 'Number of peers to broadcast to.'
         title: 'broadcastnum'
-      p2pMode:
-        type: string
-        enum:
-          - NORMAL
-          - ACCEPT
-          - REFUSE
-        description: 'Controls which peers the node should allow.'
-        title: 'exclusive/exclusiveIn'
       p2pPeerFileSuffix:
         type: string
         description: 'The filename suffix of the peers file which is added to the current network'
@@ -175,7 +186,7 @@ definitions:
         title: '[CUSTOM|LOCAL|MAIN]NetworkPort'
       p2pSeed:
         allOf:
-          - $ref: '#/definitions/types/uri'
+          - $ref: '#/definitions/types/uri-reference'
         description: 'The peer-to-peer seed URL.'
         title: '[CUSTOM|LOCAL|MAIN]SeedURL'
       p2pSpecialPeers:
@@ -226,8 +237,8 @@ definitions:
               const: '*'
             maxItems: 1
           - items:
-              $ref: '#/definitions/types/hostname'
-        description: 'Configures CORS for the API port. Accepts one or more allowed hostnames or a single wildcard `*`.'
+              $ref: '#/definitions/types/uri'
+        description: 'Configures CORS for the API port. Accepts one or more allowed origins or a single wildcard `*`.'
         title: 'CorsDomains'
       webPassword:
         type: string
@@ -240,7 +251,7 @@ definitions:
       webTLSAddresses:
         type: array
         items:
-          $ref: '#/definitions/types/uri'
+          $ref: '#/definitions/types/hostname'
         minItems: 1
         uniqueItems: true
         description: 'The addresses to include in a self-generated certificate.'
