@@ -281,21 +281,27 @@ $merge:
       network:
         type: string
         pattern: '^LOCAL|MAIN|[A-Za-z_]+$'
-        description: 'The network to connect to.'
+        description: 'The peer-to-peer network to connect to. Set to MAIN or LOCAL, or enter the network name for CUSTOM networks'
         title: 'Network/customnet'
       networks:
+        type: object
         additionalProperties: false
         patternProperties:
           '^LOCAL|MAIN|[A-Za-z_]+$':
             $ref: '#/definitions/options'
-        type: object
-      role:
-        type: string
-        pattern: '^MAINNET_AUTHORITY|[A-Za-z_]+$'
-        description: 'The active group of settings, as defined in the "roles" section.'
       roles:
+        oneOf:
+          - type: array
+            items:
+              type: string
+              pattern: '^[A-Za-z0-9_]+$'
+            uniqueItems: true
+          - type: 'null'
+        description: 'Zero or more active roles, as defined in the "roleDefinitions" section.'
+      roleDefinitions:
+        type: object
         additionalProperties: false
         patternProperties:
-          '^MAINNET_AUTHORITY|[A-Za-z_]+$':
+          '^[A-Za-z0-9_]+$':
             $ref: '#/definitions/options'
-        type: object
+        description: 'Definitions of role settings presets.'

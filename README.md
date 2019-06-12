@@ -9,7 +9,7 @@ This is a Docker image containing the Factom Protocol daemon.
   * Kubernetes-ready
   * Runs as non-root user
 
-## Installation
+## Image Name and Tags
 
 The basename of the image is:
 ```
@@ -18,25 +18,21 @@ bedrocksolutions/factomd
 
 The following tags are available:
 
-* `mainnet`: Contains the current version of `factomd` running on the
-mainnet.
-* `testnet`: Contains the current version of `factomd` running on the
-testnet.
+* `6.3.1`: The current mainnet version of `factomd`.
+* `6.3.1-rc1`: The current testnet version of `factomd`.
 
-## The Basics
-
-### Volumes
+## Volumes
 
 The container expects two volumes to be mounted at startup:
 
-#### `/app/config`
+### `/app/config`
   * A directory containing one or more YAML configuration files.
 
-#### `/app/database`
+### `/app/database`
   * A directory containing either 1) an existing Factom blockchain,
    or 2) nothing.
    
-### Configuration Files
+## Configuration
 
 Configuration is stored in one or more YAML files and injected into the
 container under `/app/config`. Most deployments will simply put all 
@@ -46,7 +42,7 @@ up into multiple files. For example, when running an authority node,
 server keys might be stored in one file while the remainder of the config
 is kept in another file.
 
-A couple of points:
+### Key points
 
   * All config file names must end with either `.yml` or `.yaml` or
   the file will be skipped.
@@ -67,7 +63,115 @@ for changes. When a change is detected, the new configuration will be
 validated and a fresh `start.sh` script and `factomd.conf` will be 
 generated as necessary.
 
-### Commands
+## Network Presets
+
+Configuration related to a specific network can be stored as a named preset
+under the `networks` key. To activate the preset, simply set the `network`
+key to match. For example, the following:
+```yaml
+network: MAIN
+
+networks:
+  MAIN:
+    controlPanelName: Mainnet
+  fct_community_test:
+    controlPanelName: Testnet
+```
+would set `controlPanelName` to `Mainnet`.
+
+Settings activated under the `networks` key take precedence over settings
+at the top level. The following:
+```yaml
+network: fct_community_test
+faultTimeout: 15m
+
+networks:
+  MAIN:
+    faultTimeout: 5m
+  fct_community_test:
+    faultTimeout: 10m
+```
+would set `faultTimeout` to 10 minutes.
+
+### Predefined network presets
+
+There is a single, predefined network preset: `fct_community_test`.
+It is defined as:
+```yaml
+networks:
+  fct_community_test:
+    blockTime: 600
+    bootstrapIdentity: '8888882f5002ff95fce15d20ecb7e18ae6cc4d5849b372985d856b56e492ae0f'
+    bootstrapKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae'
+    identityChain: 'FA1E000000000000000000000000000000000000000000000000000000000000'
+    oraclePublicKey: '58cfccaa48a101742845df3cecde6a9f38037030842d34d0eaa76867904705ae'
+    p2pPort: 8110
+    p2pSeed: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt'
+```
+This means that a testnet follower can be configured with only the following
+config file:
+```yaml
+network: fct_community_test
+```
+
+## Role Presets
+
+Configuration related to a specific server role can be stored as a named 
+preset under the `roleDefinitions` key. To activate the preset, add an element to the
+`roles` array that matches the name of the preset. Here is an example:
+```yaml
+network: fct_community_test
+
+roles: 
+  - serverIdentity1
+
+roleDefinitions:
+  serverIdentity1:
+    identityChain: XXXX
+    identityPrivateKey: YYYY
+    identityPublicKey: ZZZZ
+```
+
+### Predefined role presets
+
+There are two predefined role presets, defined as:
+```yaml
+roleDefinitions:
+  MAINNET_AUTHORITY:
+    p2pSpecialPeers:
+      - 52.17.183.121:8108
+      - 52.17.153.126:8108
+      - 52.19.117.149:8108
+      - 52.18.72.212:8108
+    startDelay: 600
+  TESTNET_AUTHORITY:
+    startDelay: 600
+```
+This means that a mainnet authority node can be configured with only the following config file:
+```yaml
+network: MAIN
+roles: 
+  - MAINET_AUTHORITY
+identityChain: XXXX
+identityPrivateKey: YYYY
+identityPublicKey: ZZZZ
+```
+An even slicker way to do it would be as follows:
+```yaml
+network: MAIN
+roles: 
+  - MAINET_AUTHORITY
+  - serverIdentity1
+identityActivationHeight: 12345
+roleDefinitions:
+  serverIdentity1:
+    identityChain: XXXX
+    identityPrivateKey: YYYY
+    identityPublicKey: ZZZZ
+```
+because now the pieces are in place to do an easy brain swap.
+
+## Commands
 
 The container accepts several commands. These commands are passed to the
 container as the first and only command argument. Example:
@@ -80,32 +184,32 @@ docker run \
   bedrocksolutions/factomd:<tag> [command]
 ```
 
-#### start
+### start
 
 This is the default command. It processes the configuration, establishes
 a watcher process to monitor the configuration for changes, and starts
 `factomd`.
 
-#### config
+### config
 
 Displays the merged YAML configuration.
 
-#### files
+### files
 
 Displays the generated start script, `factomd.conf`, and any other
 generated files.
 
-#### help
+### help
 
 Displays a help message that lists the various commands.
 
-#### schema
+### schema
 
 Displays the JSON Schema used for validating the YAML configuration. 
 Useful when debugging validation errors or when trying to remember 
 the YAML file syntax.
 
-#### shell
+### shell
 
 For use when a shell into the container is desired.
 
@@ -117,300 +221,54 @@ failure. Validation failure during runtime logs the errors to STDOUT and
 retains the previous configuration.
 
 > Note: A subset of factomd configuration options and command line arguments are 
-currently supported. If there is a setting missing, please
+currently supported. If there is a needed setting missing, please
 [open an issue](https://github.com/BedrockSolutions/factomd-docker/issues).
 
 ### Custom Data Types
 
-The following custom data types have been created, in addition to the
+The following custom data types are used within the YAML config file(s), in addition to the
 usual standard types:
 
-* `16BitInteger`: An integer between 0-65535
-  * Example: `4096`
-* `block`: An integer between 0-9999999
-  * Example: `194142`
-* `hexId`: A 64-character hexadecimal string
-  * Example: `38bab1455b7bd7e5efd15c53c777c79d0c988e9210f1da49a99d95b3a6417be9`
-* `hostname`: A standard Internet hostname
-  * Example: `www.foo.com`
-* `ipAddressAndPort`: A IPv4 address and port, separated by a `:`
-  * Example: `12.34.56.78:9000`
-* `pemData`: Standard Privacy Enhanced Mail format data
-  * Example:
-```
-  -----BEGIN CERTIFICATE-----
-  MIIDXjCCAkYCCQCcHTMVrEHBczANBgkqhkiG9w0BAQsFADBxMQswCQYDVQQGEwJV
-  UzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEaMBgG
-  A1UECgwRQmVkcm9jayBTb2x1dGlvbnMxHDAaBgNVBAMME2JlZHJvY2tzb2x1dGlv
-  bnMuaW8wHhcNMTkwNTIxMTczNTEyWhcNMjAwNTIwMTczNTEyWjBxMQswCQYDVQQG
-  EwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEa
-  -----END CERTIFICATE-----
-```
-* `tcpPort`: Unprivileged TCP port in the range 1025-65535
+* `256BitHex`: A 64-character hexadecimal string. Example:
+  * `38bab1455b7bd7e5efd15c53c777c79d0c988e9210f1da49a99d95b3a6417be9`
+* `32BitInteger`: An integer between 0 and 4294967295. Example:
+  * `4096`
+* `block`: An integer between 0 and 9999999. Example:
+  * `194142`
+* `duration`: A length of time. Can be specified as either a `32BitInteger`
+number of seconds, or as a string. String values have a single character
+suffix that specifies the units. Allowed suffixes are `[s, m, h, d]`.
+Examples:
+  * `600`
+  * `600s`
+  * `10m`
+* `hostname`: A standard Internet hostname. Example:
+  * `www.foo.com`
+* `ipAddressAndPort`: A IPv4 address and port, separated by a `:`. 
+Example:
+  * `12.34.56.78:9000`
+* `pemData`: Standard Privacy Enhanced Mail format data. Example:
+  * ```
+    -----BEGIN CERTIFICATE-----
+    MIIDXjCCAkYCCQCcHTMVrEHBczANBgkqhkiG9w0BAQsFADBxMQswCQYDVQQGEwJV
+    UzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEaMBgG
+    A1UECgwRQmVkcm9jayBTb2x1dGlvbnMxHDAaBgNVBAMME2JlZHJvY2tzb2x1dGlv
+    bnMuaW8wHhcNMTkwNTIxMTczNTEyWhcNMjAwNTIwMTczNTEyWjBxMQswCQYDVQQG
+    EwJVUzETMBEGA1UECAwKV2FzaGluZ3RvbjETMBEGA1UEBwwKQmVsbGluZ2hhbTEa
+    -----END CERTIFICATE-----
+  ```
+* `unprivilegedPort`: Unprivileged TCP or UDP port in the range 1025-65535
   * Example: `8080`
-* `uri`: A standard Internet URI
-  * Example: `https://api.bar.com/foo`
+* `uri`: An absolute URI, with protocol. Example:
+  * `https://api.bar.com/foo`
+* `uri-reference`: A relative path, fragment, or any other style of URI 
+reference. Examples:
+  * `https://foo.com`
+  * `/foo/bar.html`
+  * `../foo.html`
 
 ### Options
 
-#### `apiPassword`
-
-* The password for the API and Control Panel ports' basic 
-authentication.
-* Type: `string`
-* Factomd option: `FactomdRpcPass`
-
-#### `apiPort`
-
-* The port the API server should listen on.
-* Type: `tcpPort`
-* Factomd option: `PortNumber`
-
-#### `apiUser`
-
-* The username for the API and Control Panel ports' basic 
-authentication.
-* Type: `string`
-* Factomd option: `FactomdRpcUser`
-
-#### `authorityServerPrivateKey`
-
-* An authority server identity private key
-* Type: `hexId`
-* Factomd option: `LocalServerPrivKey`
-
-#### `authorityServerPublicKey`
-
-* An authority server identity public key
-* Type: `hexId`
-* Factomd option: `LocalServerPublicKey`
-
-#### `brainSwapHeight`
-
-* The block height at which a brain swap will occur.
-* Type: `block`
-* Factomd option: `ChangeAcksHeight`
-
-#### `broadcastNumber`
-
-* Number of peers to broadcast to in the peer to peer networking.
-* Type: `16BitInteger`
-* Minimum: 1
-* Factomd argument: `broadcastnum`
-
-#### `controlPanelMode`
-
-* Controls the behavior of the control panel.
-* Type: `string`
-* Enum: `disabled`, `readonly`, `readwrite`
-* Factomd option: `ControlPanelSetting`
-
-#### `controlPanelPort`
-
-* The port the control panel server should listen on.
-* Type: `tcpPort`
-* Factomd option: `ControlPanelPort`
-
-#### `corsDomains`
-
-* Configures CORS for the API port. Accepts one or more allowed hostnames
-or a single wildcard `*`.
-* Type: `array`
-* Items:
-  * Type: `hostname`
-* Factomd option: `CorsDomains`
-
-#### `customBootstrapIdentity`
-
-* The custom bootstrap identity used when `network: custom` is enabled.
-* Type: `hexId`
-* Factomd option: `CustomBootstrapIdentity`
-
-#### `customBootstrapKey`
-
-* The custom bootstrap key used when `network: custom` is enabled.
-* Type: `hexId`
-* Factomd option: `CustomBootstrapKey`
-
-#### `customExchangeRateAuthorityPublicKey`
-
-* The exchange rate key used when `network: custom` is enabled.
-* Type: `hexId`
-* Factomd option: `ExchangeRateAuthorityPublicKey`
-
-#### `customNetworkId`
-
-* The custom network id used when `network: custom` is enabled.
-* Type: `string`
-* Max length: 20
-* Factomd argument: `customnet`
-
-#### `customNetworkPort`
-
-* The peer-to-peer port used when `network: custom` is enabled.
-* Type: `tcpPort`
-* Factomd option: `CustomNetworkPort`
-
-#### `customSeedUrl`
-
-* The seed URL used when `network: custom` is enabled.
-* Type: `uri`
-* Factomd option: `CustomSeedURL`
-
-#### `customSpecialPeers`
-* The special peers list used when `network: custom` is enabled.
-* Type: `array`
-* Items:
-  * Type: `ipAddressAndPort`
-* Factomd option: `CustomSpecialPeers`
-
-#### `directoryBlockInSeconds`
-
-* The duration of the directory block in seconds.
-* Type: `16BitInteger`
-* Factomd option: `DirectoryBlockInSeconds`
-
-#### `fastBoot`
-
-* Enable/disable fast boot functionality.
-* Type: `boolean`
-* Factomd option: `FastBoot`
-
-#### `faultTimeoutInSeconds`
-
-* Seconds before Federated servers are considered at-fault.
-* Type: `16BitInteger`
-* Factomd argument: `faulttimeout`
-
-#### `identityChainId`
-
-* Identification chain for the server.
-* Type: `hexId`
-* Factomd option: `IdentityChainID`
-
-#### `localNetworkPort`
-
-* The peer-to-peer port used when `network: local` is enabled.
-* Type: `tcpPort`
-* Factomd option: `LocalNetworkPort`
-
-#### `localSeedUrl`
-
-* The seed URL used when `network: local` is enabled.
-* Type: `uri`
-* Factomd option: `LocalSeedURL`
-
-#### `localSpecialPeers`
-
-* The special peers list used when `network: local` is enabled.
-* Type: `array`
-* Items:
-  * Type: `ipAddressAndPort`
-* Factomd option: `LocalSpecialPeers`
-
-#### `logLevel`
-
-* Controls the verbosity of log output.
-* Type: `string`
-* Enum: `none`, `debug`, `info`, `warning`, `error`, `fatal`, `panic`
-* Factomd argument: `loglvl`
-
-#### `mainNetworkPort`
-
-* The peer-to-peer port used when `network: main` is enabled.
-* Type: `tcpPort`
-* Factomd option: `MainNetworkPort`
-
-#### `mainSeedUrl`
-
-* The seed URL used when `network: main` is enabled.
-* Type: `uri`
-* Factomd option: `MainSeedURL`
-
-#### `mainSpecialPeers`
-
-* The special peers list used when `network: main` is enabled.
-* Type: `array`
-* Items:
-  * Type: `ipAddressAndPort`
-* Factomd option: `MainSpecialPeers`
-
-#### `network`
-
-* The network to connect to.
-* Type: `string`
-* Enum: `custom`, `local`, `main`, `test`
-
-#### `networkProfile`
-
-* Selects a predefined group of network-specific settings.
-* Type: `string`
-* Enum: `mainnet`, `testnet`
-
-#### `nodeName`
-
-* The name of the node. Displayed in the control panel.
-* Type: `string`
-* Factomd argument: `nodename`
-
-#### `roleProfile`
-
-* Selects a predefined group of role-specific settings.
-* Type: `string`
-* Enum: `authority`
-
-#### `specialPeersDialOnly`
-
-* Only dial out to nodes on the special peers list.
-* Type: `boolean`
-* Factomd argument: `exclusive`
-
-#### `specialPeersOnly`
-
-* Only communicate with nodes on the special peers list.
-* Type: `boolean`
-* Factomd argument: `exclusiveIn`
-
-#### `startDelayInSeconds`
-
-* Seconds before message processing is started.
-* Type: `16BitInteger`
-* Factomd argument: `startdelay`
-
-#### `testNetworkPort`
-
-* The peer-to-peer port used when `network: test` is enabled.
-* Type: `tcpPort`
-* Factomd option: `TestNetworkPort`
-
-#### `testSeedUrl`
-
-* The seed URL used when `network: test` is enabled.
-* Type: `uri`
-* Factomd option: `TestSeedURL`
-
-#### `testSpecialPeers`
-
-* The special peers list used when `network: test` is enabled.
-* Type: `array`
-* Items:
-  * Type: `ipAddressAndPort`
-* Factomd option: `TestSpecialPeers`
-
-#### `tlsEnabled`
-
-* Enables TLS on both the API and Control Panel ports.
-* Type: `boolean`
-* Factomd option: `FactomdTlsEnabled`
-
-#### `tlsPrivateKey`
-
-* Private key used to enable TLS on the API and Control Panel ports.
-* Type: `pemData`
-* Factomd option: `FactomdTlsPrivateKey`
-
-#### `tlsPublicCert`
-
-* Public certificate used to enable TLS on the API and Control Panel ports.
-* Type: `pemData`
-* Factomd option: `FactomdTlsPublicCert`
+Currently, the best way to learn about the options is to 
+[look at the schema](./confz.d/schema.yaml). Once things settle down, the various options
+will be fully documented here.

@@ -85,12 +85,6 @@ const overrides = {
     arg: true,
     name: 'loglvl',
   },
-  network: {
-    squelched: true,
-  },
-  networks: {
-    squelched: true,
-  },
   noBalanceHash: {
     arg: true,
     name: 'balancehash',
@@ -154,12 +148,6 @@ const overrides = {
   pprofPort: {
     arg: true,
     name: 'logPort',
-  },
-  role: {
-    squelched: true,
-  },
-  roles: {
-    squelched: true
   },
   roundTimeout: {
     arg: true,
@@ -231,12 +219,12 @@ const getValue = (key, value) => {
 const mergeValues = values => {
   return flow([
     assignAll,
-    omit(['networks', 'roles']),
+    omit(['network', 'networks', 'roles', 'roleDefinitions']),
   ])([
     {},
     values,
     get(values.network, values.networks),
-    get(values.role, values.roles),
+    ...map(role => get(role, values.roleDefinitions), values.roles),
   ])
 }
 
@@ -274,6 +262,5 @@ const adaptConfiguration = (values, selectArgs) => {
     sortObjectKeys,
   ])(mergedValues)
 }
-
 
 module.exports = {adaptConfiguration, getNetwork, isCustomNetwork}

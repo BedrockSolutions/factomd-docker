@@ -5,18 +5,21 @@
   "license": "GPL-3.0-or-later",
   "repository": "https://github.com/BedrockSolutions/factomd-docker",
   "scripts": {
-    "build": "docker build --build-arg FACTOMD_VERSION=6.3.1 -t factomd:latest -t bedrocksolutions/factomd:latest .",
-    "build:mainnet": "docker build --build-arg FACTOMD_VERSION=6.3.1 -t factomd:mainnet -t bedrocksolutions/factomd:mainnet .",
-    "build:testnet": "docker build --build-arg FACTOMD_VERSION=6.3.1-rc1 -t factomd:testnet -t bedrocksolutions/factomd:testnet .",
-    "docker:prune": "docker container prune --force > /dev/null",
-    "push": "docker push bedrocksolutions/factomd:latest",
-    "push:mainnet": "docker push bedrocksolutions/factomd:mainnet",
-    "push:testnet": "docker push bedrocksolutions/factomd:testnet",
+    "build": "(export FACTOMD_TAG=v6.3.1 DOCKER_TAG=latest; npm run build:impl)",
+    "test": "npm run test:6.3.1",
+    "build:6.3.1": "(export FACTOMD_TAG=v6.3.1 DOCKER_TAG=v6.3.1; npm run build:impl)",
+    "push:6.3.1": "(export DOCKER_TAG=v6.3.1; npm run push:impl)",
+    "test:6.3.1": "(export DOCKER_TAG=v6.3.1; npm run test:impl)",
+    "build:6.3.1-rc1": "(export FACTOMD_TAG=v6.3.1-rc1 DOCKER_TAG=v6.3.1-rc1; npm run build:impl)",
+    "push:6.3.1-rc1": "(export DOCKER_TAG=v6.3.1-rc1; npm run push:impl)",
+    "test:6.3.1-rc1": "(export DOCKER_TAG=v6.3.1-rc1; npm run test:impl)",
+    "build:impl": "docker build --build-arg FACTOMD_TAG=${FACTOMD_TAG} -t factomd:${DOCKER_TAG} -t bedrocksolutions/factomd:${DOCKER_TAG} .",
+    "push:impl": "docker push bedrocksolutions/factomd:${DOCKER_TAG}",
+    "test:impl": "ava",
+    "config": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest config",
+    "prune": "docker container prune --force > /dev/null",
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
-    "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest",
-    "test": "ava && npm run docker:prune",
-    "test:build": "npm run build && npm test",
-    "config": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest config"
+    "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest"
   },
   "dependencies": {
     "lodash": "^4.17.11",
@@ -32,11 +35,11 @@
   "ava": {
     "failFast": true,
     "files": [
-      "test/**/*",
-      "!test/util.js"
+      "spec/**/*",
+      "!spec/util.js"
     ],
     "helpers": [
-      "test/util.js"
+      "spec/util.js"
     ],
     "serial": true
   }

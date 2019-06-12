@@ -10,11 +10,13 @@ networks:
     p2pPort: 8110
     p2pSeed: 'https://raw.githubusercontent.com/FactomProject/communitytestnet/master/seeds/testnetseeds.txt'
 
-roles:
+roleDefinitions:
   MAINNET_AUTHORITY:
     p2pSpecialPeers:
       - 52.17.183.121:8108
       - 52.17.153.126:8108
       - 52.19.117.149:8108
       - 52.18.72.212:8108
+    startDelay: 600
+  TESTNET_AUTHORITY:
     startDelay: 600

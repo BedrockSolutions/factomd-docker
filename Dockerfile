@@ -1,8 +1,8 @@
-ARG FACTOMD_VERSION
+ARG FACTOMD_TAG
 
-FROM bedrocksolutions/confz:latest as confz
+FROM bedrocksolutions/confz:0.1.0 as confz
 
-FROM factominc/factomd:v${FACTOMD_VERSION}-alpine AS factomd
+FROM factominc/factomd:${FACTOMD_TAG}-alpine AS factomd
 
 FROM node:10-alpine AS node_modules
 
