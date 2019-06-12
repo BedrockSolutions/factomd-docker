@@ -1,0 +1,3 @@
+src: factomd.conf.njk
+dest: ./factomd.conf
+mode: 644

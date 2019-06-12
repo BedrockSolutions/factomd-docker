@@ -1,0 +1,4 @@
+defaultValues:
+  - ./confz.d/defaults.yaml
+values:
+  - ./config

@@ -1,0 +1,307 @@
+definitions:
+  types:
+    256BitHex:
+      type: string
+      pattern: '^[0-9a-fA-F]{64}$'
+    32BitInteger:
+      type: integer
+      minimum: 0
+      maximum: 4294967295
+    block:
+      type: integer
+      minimum: 0
+      maximum: 9999999
+    duration:
+      oneOf:
+        - $ref: '#/definitions/types/32BitInteger'
+        - type: string
+          pattern: '^\d+(?:s|m|h|d)$'
+    hostname:
+      type: string
+      format: hostname
+    ipAddressAndPort:
+      type: string
+      pattern: '^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(102[5-9]|10[3-9][0-9]|1[1-9][0-9]{2}|[2-9][0-9]{3}|[1-5][0-9]{4}|6[1-4][0-9]{3}|65[1-4][0-9]{2}|655[1-2][0-9]|6553[1-5])$'
+    pemData:
+      type: string
+      pattern: '^-{5}BEGIN((?: [A-Z]+)*)-{5}(\r?\n)(?:(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?\2)+-{5}END\1-{5}\2?$'
+    unprivilegedPort:
+      type: integer
+      minimum: 1025
+      maximum: 65535
+    uri:
+      type: string
+      format: uri
+    uri-reference:
+      type: string
+      format: uri-reference
+  options:
+    additionalProperties: false
+    dependencies:
+      identityPrivateKey:
+        - identityPublicKey
+      identityPublicKey:
+        - identityPrivateKey
+      webPassword:
+        - webUsername
+      webTLSKey:
+        - webTLSCertificate
+      webTLSCertificate:
+        - webTLSKey
+      webUsername:
+        - webPassword
+    properties:
+      apiPort:
+        allOf:
+          - $ref: '#/definitions/types/unprivilegedPort'
+        description: 'The API server listen port.'
+        title: 'PortNumber'
+      blockTime:
+        allOf:
+          - $ref: '#/definitions/types/duration'
+        description: 'The length of the directory block.'
+        title: 'DirectoryBlockInSeconds'
+      bootstrapIdentity:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'The identity that signed the genesis block.'
+        title: 'CustomBootstrapIdentity'
+      bootstrapKey:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'The key that signed the genesis block.'
+        title: 'CustomBootstrapKey'
+      controlPanel:
+        type: string
+        enum:
+          - DISABLED
+          - READONLY
+          - READWRITE
+        description: 'Controls the behavior of the Control Panel.'
+        title: 'ControlPanelSetting'
+      controlPanelName:
+        type: string
+        maxlength: 20
+        description: 'The display name of the node on the control panel.'
+        title: 'nodename'
+      controlPanelPort:
+        allOf:
+          - $ref: '#/definitions/types/unprivilegedPort'
+        description: 'The Control Panel server listen port.'
+        title: 'ControlPanelPort'
+      dbNoFastBoot:
+        type: boolean
+        description: 'Disable the use of the FastBoot file to cache block validation.'
+        title: 'FastBoot'
+      dbType:
+        type: string
+        enum:
+          - LDB
+          - BOLT
+          - MAP
+        description: 'The database architecture to use'
+        title: 'DBType'
+      faultTimeout:
+        allOf:
+          - $ref: '#/definitions/types/duration'
+        description: 'How long to wait for authority nodes before faulting them.'
+        title: 'faulttimeout'
+      forceFollower:
+        type: boolean
+        description: 'Enable to force a node to always run as follower.'
+        title: 'follower'
+      identityActivationHeight:
+        allOf:
+          - $ref: '#/definitions/types/block'
+        description: 'The block height at which a brain swap will occur.'
+        title: 'ChangeAcksHeight'
+      identityChain:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'Identification chain for the server.'
+        title: 'IdentityChainID'
+      identityPrivateKey:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'The private key of the identity used to sign messages.'
+        title: 'LocalServerPrivKey'
+      identityPublicKey:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'The public key of the identity used to sign messages.'
+        title: 'LocalServerPublicKey'
+      logLevel:
+        type: string
+        enum:
+          - NONE
+          - DEBUG
+          - INFO
+          - WARNING
+          - ERROR
+          - CRITICAL
+          - ALERT
+          - EMERGENCY
+        description: 'Controls the verbosity of log output.'
+        title: 'loglvl'
+      noBalanceHash:
+        type: boolean
+        description: 'Disable adding balance hashes to ACKs.'
+        title: 'balancehash'
+      oracleChain:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'Governs the current exchange rate of Factoshi to EC.'
+        title: 'ExchangeRateChainId'
+      oraclePublicKey:
+        allOf:
+          - $ref: '#/definitions/types/256BitHex'
+        description: 'The public key that validates entries to the oracle chain.'
+        title: 'ExchangeRateAuthorityPublicKey'
+      p2pConnectionPolicy:
+        type: string
+        enum:
+          - NORMAL
+          - ACCEPT
+          - REFUSE
+        description: 'Controls which peers the node should allow.'
+        title: 'exclusive/exclusiveIn'
+      p2pDisable:
+        type: boolean
+        description: 'If enabled, the node will not connect to a network.'
+        title: 'enablenet'
+      p2pFanout:
+        allOf:
+          - $ref: '#/definitions/types/32BitInteger'
+        minimum: 1
+        description: 'Number of peers to broadcast to.'
+        title: 'broadcastnum'
+      p2pPeerFileSuffix:
+        type: string
+        description: 'The filename suffix of the peers file which is added to the current network'
+        title: 'PeersFile'
+      p2pPort:
+        allOf:
+          - $ref: '#/definitions/types/unprivilegedPort'
+        description: 'The peer-to-peer port.'
+        title: '[CUSTOM|LOCAL|MAIN]NetworkPort'
+      p2pSeed:
+        allOf:
+          - $ref: '#/definitions/types/uri-reference'
+        description: 'The peer-to-peer seed URL.'
+        title: '[CUSTOM|LOCAL|MAIN]SeedURL'
+      p2pSpecialPeers:
+        type: array
+        items:
+          $ref: '#/definitions/types/ipAddressAndPort'
+        minItems: 1
+        uniqueItems: true
+        description: 'The peer-to-peer special peers list.'
+        title: '[CUSTOM|LOCAL|MAIN]SpecialPeers'
+      p2pTimeout:
+        allOf:
+          - $ref: '#/definitions/types/duration'
+        description: 'How long peers have to send or receive a message before timing out'
+        title: 'deadline'
+      pprofExpose:
+        type: boolean
+        description: 'If enabled, the pprof server will accept connections outside of localhost.'
+        title: 'exposeprofiler'
+      pprofMPR:
+        allOf:
+          - $ref: '#/definitions/types/32BitInteger'
+        description: 'Set the Memory Profile Rate to update profiling per X bytes allocated.'
+        title: 'mpr'
+      pprofPort:
+        allOf:
+          - $ref: '#/definitions/types/unprivilegedPort'
+        description: 'Port for the pprof frontend.'
+        title: 'logPort'
+      roundTimeout:
+        allOf:
+          - $ref: '#/definitions/types/duration'
+        description: 'How long an audit node has to volunteer before moving to the next one.'
+        title: 'roundtimeout'
+      startDelay:
+        allOf:
+          - $ref: '#/definitions/types/duration'
+        description: 'Seconds before message processing is started.'
+        title: 'startdelay'
+      webCORS:
+        type: array
+        items:
+          type: string
+        minItems: 1
+        uniqueItems: true
+        oneOf:
+          - items:
+              const: '*'
+            maxItems: 1
+          - items:
+              $ref: '#/definitions/types/uri'
+        description: 'Configures CORS for the API port. Accepts one or more allowed origins or a single wildcard `*`.'
+        title: 'CorsDomains'
+      webPassword:
+        type: string
+        description: 'The basic authentication password for the API and Control Panel ports.'
+        title: 'FactomdRpcPass'
+      webTLS:
+        type: boolean
+        description: 'Enables TLS on both the API and Control Panel ports.'
+        title: 'FactomdTlsEnabled'
+      webTLSAddresses:
+        type: array
+        items:
+          $ref: '#/definitions/types/hostname'
+        minItems: 1
+        uniqueItems: true
+        description: 'The addresses to include in a self-generated certificate.'
+        title: 'selfaddr'
+      webTLSCertificate:
+        allOf:
+          - $ref: '#/definitions/types/pemData'
+        description: 'Public certificate used to enable TLS on the API and Control Panel ports.'
+        title: 'FactomdTlsPublicCert'
+      webTLSKey:
+        allOf:
+          - $ref: '#/definitions/types/pemData'
+        description: 'Private key used to enable TLS on the API and Control Panel ports.'
+        title: 'FactomdTlsPrivateKey'
+      webUsername:
+        type: string
+        description: 'The basic authentication username for the API and Control Panel ports.'
+        title: 'FactomdRpcUser'
+    type: object
+required:
+  - network
+$merge:
+  source:
+    $ref: '#/definitions/options'
+  with:
+    properties:
+      network:
+        type: string
+        pattern: '^LOCAL|MAIN|[A-Za-z_]+$'
+        description: 'The peer-to-peer network to connect to. Set to MAIN or LOCAL, or enter the network name for CUSTOM networks'
+        title: 'Network/customnet'
+      networks:
+        type: object
+        additionalProperties: false
+        patternProperties:
+          '^LOCAL|MAIN|[A-Za-z_]+$':
+            $ref: '#/definitions/options'
+      roles:
+        oneOf:
+          - type: array
+            items:
+              type: string
+              pattern: '^[A-Za-z0-9_]+$'
+            uniqueItems: true
+          - type: 'null'
+        description: 'Zero or more active roles, as defined in the "roleDefinitions" section.'
+      roleDefinitions:
+        type: object
+        additionalProperties: false
+        patternProperties:
+          '^[A-Za-z0-9_]+$':
+            $ref: '#/definitions/options'
+        description: 'Definitions of role settings presets.'

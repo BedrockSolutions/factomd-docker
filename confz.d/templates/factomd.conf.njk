@@ -1,0 +1,6 @@
+[app]
+Network = {{ this | getNetwork() }}
+
+{% for key, value in this | adaptConfiguration(false) -%}
+{{ key }} = {{ value }}
+{% endfor -%}
