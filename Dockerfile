@@ -8,7 +8,7 @@ FROM node:10-alpine AS node_modules
 
 WORKDIR /home/node
 
-COPY ./package.json .
+COPY ./package.json ./package-lock.json ./
 
 RUN npm install --production
 

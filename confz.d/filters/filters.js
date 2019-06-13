@@ -22,16 +22,15 @@ const ms = require('ms')
 const DEFAULT_ARG_NAME = toLower
 const DEFAULT_OPT_NAME = upperFirst
 
-const getNetwork = ({network}) => ['MAIN', 'LOCAL'].includes(network) ? network : 'CUSTOM'
+const networkOptValue = network => ['MAIN', 'LOCAL'].includes(network) ? network : 'CUSTOM'
 
-const isCustomNetwork = values => getNetwork(values) === 'CUSTOM'
+const isCustomNetwork = ({network}) => networkOptValue(network) === 'CUSTOM'
 
-const networkPrefixOptName = suffix => values =>
-  `${capitalize(getNetwork(values))}${suffix}`
+const networkPrefixOptName = suffix => ({network}) => `${capitalize(networkOptValue(network))}${suffix}`
 
-const durationToSeconds = value => isString(value) ? Math.trunc(ms(value) / 1000) : value
+const durationToSecondsOptValue = value => isString(value) ? Math.trunc(ms(value) / 1000) : value
 
-const not = value => !value
+const notOptValue = value => !value
 
 const overrides = {
   apiPort: {
@@ -39,7 +38,7 @@ const overrides = {
   },
   blockTime: {
     name: 'DirectoryBlockInSeconds',
-    value: durationToSeconds,
+    value: durationToSecondsOptValue,
   },
   bootstrapIdentity: {
     name: 'CustomBootstrapIdentity',
@@ -56,14 +55,14 @@ const overrides = {
   },
   dbNoFastBoot: {
     name: 'FastBoot',
-    value: not,
+    value: notOptValue,
   },
   dbType: {
     name: 'DBType',
   },
   faultTimeout: {
     arg: true,
-    value: durationToSeconds,
+    value: durationToSecondsOptValue,
   },
   forceFollower: {
     arg: true,
@@ -85,10 +84,13 @@ const overrides = {
     arg: true,
     name: 'loglvl',
   },
+  network: {
+    value: networkOptValue,
+  },
   noBalanceHash: {
     arg: true,
     name: 'balancehash',
-    value: not,
+    value: notOptValue,
   },
   oracleChain: {
     name: 'ExchangeRateChainId'
@@ -99,7 +101,7 @@ const overrides = {
   p2pDisable: {
     arg: true,
     name: 'enablenet',
-    value: not,
+    value: notOptValue,
   },
   p2pConnectionPolicy: {
     arg: true,
@@ -135,7 +137,7 @@ const overrides = {
   p2pTimeout: {
     arg: true,
     name: 'deadline',
-    value: durationToSeconds
+    value: durationToSecondsOptValue
   },
   pprofExpose: {
     arg: true,
@@ -151,11 +153,11 @@ const overrides = {
   },
   roundTimeout: {
     arg: true,
-    value: durationToSeconds,
+    value: durationToSecondsOptValue,
   },
   startDelay: {
     arg: true,
-    value: durationToSeconds
+    value: durationToSecondsOptValue
   },
   webCORS: {
     joinToken: ', ',
@@ -219,7 +221,7 @@ const getValue = (key, value) => {
 const mergeValues = values => {
   return flow([
     assignAll,
-    omit(['network', 'networks', 'roles', 'roleDefinitions']),
+    omit(['networks', 'roles', 'roleDefinitions']),
   ])([
     {},
     values,
@@ -263,4 +265,4 @@ const adaptConfiguration = (values, selectArgs) => {
   ])(mergedValues)
 }
 
-module.exports = {adaptConfiguration, getNetwork, isCustomNetwork}
+module.exports = {adaptConfiguration, isCustomNetwork}
