@@ -256,6 +256,8 @@ isEqual({key: 'network', value: 'custom_network', name: 'customnet', arg: true})
 throws({key: 'network', value: null})
 throws({key: 'network', value: 123})
 
+isUndefined({key: 'networks', value: {my_network: {startDelay: 600}}, name: 'Networks'})
+
 isBoolean({key: 'noBalanceHash', name: 'balancehash', arg: true, inverted: true})
 
 is256BitHex({key: 'oracleChain', name: 'ExchangeRateChainId'})
@@ -294,6 +296,10 @@ isBoolean(({key: 'pprofExpose', name: 'exposeprofiler', arg: true}))
 is32BitInteger({key: 'pprofMPR', name: 'mpr', arg: true})
 
 isUnprivilegedPort({key: 'pprofPort', name: 'logPort', arg: true})
+
+isUndefined({key: 'roles', value: ['my_role'], name: 'Roles'})
+
+isUndefined({key: 'roleDefinitions', value: {my_role: {startDelay: 600}}, name: 'RoleDefinitions'})
 
 isDuration({key: 'roundTimeout', name: 'roundtimeout', arg: true})
 

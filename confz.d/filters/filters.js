@@ -105,18 +105,7 @@ const overrides = {
   },
   p2pConnectionPolicy: {
     arg: true,
-    custom: (_, value) => {
-      switch (value) {
-        case 'ACCEPT':
-          return {exclusive: true, exclusive_in: false}
-        case 'NORMAL':
-          return {exclusive: false, exclusive_in: false}
-        case 'REFUSE':
-          return {exclusive: false, exclusive_in: true}
-        default:
-          return {}
-      }
-    },
+    custom: (_, value) => value ? {exclusive: value === 'ACCEPT', exclusive_in: value === 'REFUSE'} : {}
   },
   p2pFanout: {
     arg: true,
