@@ -19,8 +19,12 @@ bedrocksolutions/factomd
 
 The following tags are available:
 
-* `6.3.1`: The current mainnet version of `factomd`.
-* `6.3.1-rc1`: The current testnet version of `factomd`.
+* `v6.3.2`
+* `v6.3.2-rc3`
+* `v6.3.1-rc1-anchors`
+* `v6.3.1`
+* `v6.3.1-rc2`
+* `v6.3.1-rc1`
 
 ## Volumes
 
@@ -69,7 +73,15 @@ generated as necessary.
 ## `network`
 
 The `network` setting is special, and works differently from the `Network` setting in
-`factomd.conf`. It combines the functionality of the following 
+`factomd.conf`. It combines the functionality of the following factomd settings:
+
+* `Network` config file option / `network` command line argument
+* `customnet` command line argument
+
+To specify the mainnet or local networks, set `network` to `MAIN` or `LOCAL`
+respectively. To enable a custom network, such as the testnet network, set
+`network` to the name of the custom network. For testnet, that would be
+`fct_community_test`.
 
 ## Presets
 
@@ -99,7 +111,7 @@ Network presets involve the use of two configuration options: `network` and `net
   the preset.
 
 ```yaml
-network: MAIN # <-- Setting this to 'fct_community_test` would activate the other preset!
+network: MAIN
 
 networkDefinitions:
   MAIN:
@@ -153,7 +165,7 @@ may be activated.
 
 Role presets involve the use of two configuration options: `roles` and `roleDefinitions`:
   * Presets are defined under the `roleDefinitions` object.
-  * Roles are activated by adding them to the `roles` array setting.
+  * Roles are activated by adding them to the `roles` array.
 
 ```yaml
 network: fct_community_test
@@ -215,7 +227,7 @@ because now the pieces are in place to do an easy brain swap.
 ## Commands
 
 The container accepts several commands. These commands are passed to the
-container as the first and only command argument. Example:
+container as the first and only command line argument. Example:
 ```bash
 docker run \
   --name factomd
@@ -347,7 +359,15 @@ roles:
   - cantaloupeIdentity
 #  - watermellonIdentity 
 ```
-Do the same on the `watermellon-server` and start all three servers.
+Do the same on the `watermellon-server` and start all three servers. The
+start command would look similar to the following:
+```
+docker run \
+-p 8110:8110 -p 8090:8090 \
+-v /path/to/config/dir:/app/config \
+-v /path/to/db/dir:/app/database
+bedrocksolutions/factomd:v6.3.2
+```
 
 #### Initiating the brain swap
 
@@ -371,3 +391,38 @@ roles:
 #  - watermellonIdentity 
 ```
 At block 12345 the identity will move from the leader to the backup.
+
+### Multi-file configuration
+
+Splitting the configuration up into multiple files often makes sense.
+For example, having a `common.yaml` file that contains configuration
+that is shared between multiple servers, and a `local.yaml` file that
+has server-specific configuration, can make things easier to understand.
+
+An example `common.yaml` might contain all of the identities and other
+shared config:
+```yaml
+# common.yaml
+network: MAIN
+roleDefinitions:
+  authority1:
+    identityChain: 0cc8f0ed06079f800763f806cf180735da8f16adcad25e2efb541d2ed5bf0e19
+    identityPrivateKey: 6284249f0b043e20eab4fa3d6e475e552b878414cee1a0d69d41a84912246a21
+    identityPublicKey: a3ee2142374c0b3568a469a936898e489fbf24a18daa65d8ae551186c1288f44
+  authority2:
+    identityChain: e797706c2e59c15d341745d61937f51b885b16ec55a81cc2e43842d3dead8de6
+    identityPrivateKey: d945cdd82b75f89502cc18e47afaa130eca56a7d29bff144fa0c2715773dbba1
+    identityPublicKey: c2ee8f46785d8d73dc468cfea80246ba0949f75aea7451cd89d83af7bab1d629
+```
+The `local.yaml` would then only need to contain the part of the config that
+differs between servers:
+```yaml
+# local.yaml on authority1
+identityActivationHeight: 0
+roles:
+  - MAINNET_AUTHORITY # built-in role
+  - authority1 # role defined in common.yaml
+```
+All programmatic file editing, using tools such as Ansible and Terraform, can
+then target just the `local.yaml` file, and leave the `common.yaml` file
+untouched.
