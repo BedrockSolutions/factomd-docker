@@ -231,9 +231,9 @@ container as the first and only command line argument. Example:
 ```bash
 docker run \
   --name factomd
+  -p 8108:8108 -p 8090:8090
   -v /path/to/config:/app/config \
   -v /path/to/db:/app/database \
-  -p 8108:8108
   bedrocksolutions/factomd:<tag> [command]
 ```
 
@@ -326,6 +326,36 @@ Currently, the best way to learn about the options is to
 [look at the schema](./confz.d/schema.yaml). Once things settle down, the various options
 will be fully documented here.
 
+## Migrating from the Inc image
+
+The majority of administrators currently running factomd have followed the
+community's instructions and have created `factom_database` and `factom_keys`
+docker volumes. These volumes will be owned by the `root` user, since the
+Factom Inc. docker image runs as root, and that is the user docker uses
+when assigning permissions to volumes.
+
+This image runs as `nobody`. As such, file permissions will need to be
+changed inside the docker volumes for everything to work properly. On most
+systems, the volumes are kept under `/var/lib/docker/volumes`. If that
+location is different on your system, please modify the following commands
+slightly.
+```
+sudo chown -R 65534:65534 /var/lib/docker/volumes/factom_database/_data
+sudo chown -R 65534:65534 /var/lib/docker/volumes/factom_keys/_data
+```
+One or more new YAML config files can now be placed in the `factom_keys`
+volume, and the old `factomd.conf` file there can be safely deleted once
+the system is running correctly. To start the container, a command line
+similar to the following will do the job:
+```
+docker run \
+  --name factomd
+  -p 8108:8108 -p 8090:8090
+  -v factom_config:/app/config \
+  -v factom_database:/app/database \
+  bedrocksolutions/factomd:v6.3.2
+```
+
 ## Examples
 
 ### Brain swap
@@ -363,6 +393,7 @@ Do the same on the `watermellon-server` and start all three servers. The
 start command would look similar to the following:
 ```
 docker run \
+--name factomd
 -p 8110:8110 -p 8090:8090 \
 -v /path/to/config/dir:/app/config \
 -v /path/to/db/dir:/app/database
