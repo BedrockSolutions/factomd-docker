@@ -10,6 +10,18 @@ This is a Docker image containing the Factom Protocol daemon.
   * Kubernetes-ready
   * Runs as non-root user
 
+## TOC
+
+* [Image Name and Tags](#image-name-and-tags)
+* [Volumes](#volumes)
+* [Configuration](#configuration)
+* [The `network` setting](#the-network-setting)
+* [Presets](#presets)
+* [Commands](#commands)
+* [Schema and Validation](#schema-and-validation)
+* [Options](#options)
+* [Examples](#examples)
+
 ## Image Name and Tags
 
 The basename of the image is:
@@ -70,7 +82,7 @@ for changes. When a change is detected, the new configuration will be
 validated and a fresh `start.sh` script and `factomd.conf` will be 
 generated as necessary.
 
-## `network`
+## The `network` Setting
 
 The `network` setting is special, and works differently from the `Network` setting in
 `factomd.conf`. It combines the functionality of the following factomd settings:
@@ -266,7 +278,7 @@ the YAML file syntax.
 
 For use when a shell into the container is desired.
 
-## Configuration Schema
+## Schema and Validation
 
 All configuration passed to the container is validated against a rigorous
 schema. Validation failure during container start results in immediate
@@ -320,13 +332,13 @@ reference. Examples:
   * `/foo/bar.html`
   * `../foo.html`
 
-### Options
+## Options
 
-Currently, the best way to learn about the options is to 
+Currently, the best way to learn about all of the options is to 
 [look at the schema](./confz.d/schema.yaml). Once things settle down, the various options
 will be fully documented here.
 
-## Migrating from the Inc image
+## Migrating from the Inc Image
 
 The majority of administrators currently running factomd have followed the
 community's instructions and have created `factom_database` and `factom_keys`
