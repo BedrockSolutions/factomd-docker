@@ -1,6 +1,12 @@
 network: fct_community_test
 
 controlPanelName: Macbook Testnet Follower
+
+webTLSAddresses:
+  - a.com
+  - b.net
+  - localhost
+  - 12.34.56.78
 #
 #identityActivationHeight: 12345
 #
@@ -18,7 +24,7 @@ controlPanelName: Macbook Testnet Follower
 #    identityPrivateKey: '1111111111111111111111111111111111111111111111111111111111111111'
 #    identityPublicKey: '1111111111111111111111111111111111111111111111111111111111111111'
 
-#networks:
+#networkDefinitions:
 #  MAIN:
 #    faultTimeout: 100
 #  fct_community_test:

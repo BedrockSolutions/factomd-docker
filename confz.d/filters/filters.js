@@ -190,7 +190,6 @@ const getValue = (key, value) => {
   const {
     arg = false,
     joinToken = ' ',
-    unquotedString = false,
     value: overrideValue
   } = overrides[key] || {}
 
@@ -198,23 +197,17 @@ const getValue = (key, value) => {
     value = isFunction(overrideValue) ? overrideValue(value, key) : overrideValue
   }
 
-  if (isArray(value)) {
-    return `"${join(joinToken, value)}"`
-  } else if (isString(value) && !arg && !unquotedString ) {
-    return `"${value}"`
-  } else {
-    return `${value}`
-  }
+  return `"${isArray(value) ? join(joinToken, value) : value}"`
 }
 
 const mergeValues = values => {
   return flow([
     assignAll,
-    omit(['networks', 'roles', 'roleDefinitions']),
+    omit(['networkDefinitions', 'roles', 'roleDefinitions']),
   ])([
     {},
     values,
-    get(values.network, values.networks),
+    get(values.network, values.networkDefinitions),
     ...map(role => get(role, values.roleDefinitions), values.roles),
   ])
 }

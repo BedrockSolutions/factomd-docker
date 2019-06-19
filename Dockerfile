@@ -1,6 +1,6 @@
 ARG FACTOMD_TAG
 
-FROM bedrocksolutions/confz:0.1.0 as confz
+FROM bedrocksolutions/confz:v0.1.0 as confz
 
 FROM factominc/factomd:${FACTOMD_TAG}-alpine AS factomd
 

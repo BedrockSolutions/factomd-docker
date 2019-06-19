@@ -32,7 +32,7 @@ definitions:
     uri:
       type: string
       format: uri
-    uri-reference:
+    uriReference:
       type: string
       format: uri-reference
   options:
@@ -186,7 +186,7 @@ definitions:
         title: '[CUSTOM|LOCAL|MAIN]NetworkPort'
       p2pSeed:
         allOf:
-          - $ref: '#/definitions/types/uri-reference'
+          - $ref: '#/definitions/types/uriReference'
         description: 'The peer-to-peer seed URL.'
         title: '[CUSTOM|LOCAL|MAIN]SeedURL'
       p2pSpecialPeers:
@@ -283,7 +283,7 @@ $merge:
         pattern: '^LOCAL|MAIN|[A-Za-z_]+$'
         description: 'The peer-to-peer network to connect to. Set to MAIN or LOCAL, or enter the network name for CUSTOM networks'
         title: 'Network/customnet'
-      networks:
+      networkDefinitions:
         type: object
         additionalProperties: false
         patternProperties:

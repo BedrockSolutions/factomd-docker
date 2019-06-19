@@ -256,7 +256,7 @@ isEqual({key: 'network', value: 'custom_network', name: 'customnet', arg: true})
 throws({key: 'network', value: null})
 throws({key: 'network', value: 123})
 
-isUndefined({key: 'networks', value: {my_network: {startDelay: 600}}, name: 'Networks'})
+isUndefined({key: 'networkDefinitions', value: {my_network: {startDelay: 600}}, name: 'Networks'})
 
 isBoolean({key: 'noBalanceHash', name: 'balancehash', arg: true, inverted: true})
 

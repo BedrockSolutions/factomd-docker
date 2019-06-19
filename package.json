@@ -20,7 +20,7 @@
     "prune": "docker container prune --force > /dev/null",
     "publish": "npm run build:6.3.1 && npm run push:6.3.1 && npm run build:6.3.1-rc1 && npm run push:6.3.1-rc1",
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
-    "start": "docker run -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest"
+    "start": "docker run -p 8088:8088 -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest"
   },
   "dependencies": {
     "lodash": "^4.17.11",
