@@ -216,7 +216,7 @@ This means that a mainnet authority node can be configured with only the followi
 ```yaml
 network: MAIN
 roles: 
-  - MAINET_AUTHORITY
+  - MAINNET_AUTHORITY
 identityChain: XXXX
 identityPrivateKey: YYYY
 identityPublicKey: ZZZZ
@@ -225,7 +225,7 @@ An even slicker way to do it would be as follows:
 ```yaml
 network: MAIN
 roles: 
-  - MAINET_AUTHORITY
+  - MAINNET_AUTHORITY
   - serverIdentity1
 identityActivationHeight: 12345
 roleDefinitions:
