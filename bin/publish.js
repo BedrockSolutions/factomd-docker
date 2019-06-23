@@ -1,17 +1,23 @@
-const { version } = require('../package.json')
+const { execSync } = require('child_process')
 
-const FACTOMD_DOCKER_TAGS = [
-  'FD-689_test0',
-  'v6.3.1-rc1',
-  'v6.3.1-rc2',
-  'v6.3.1',
-  'v6.3.1-rc1-anchors',
-  'v6.3.2-rc3',
-  'v6.3.2',
-]
+const {
+  version,
+  publish: { factomdTags },
+} = require('../package.json')
 
-// for tag in "${TAGS[@]}"
-// do
-//    docker build --build-arg FACTOMD_TAG=${tag} -t bedrocksolutions/factomd:${tag} .
-//    docker push bedrocksolutions/factomd:${tag}
-// done
+const TAG_PREFIX = 'bedrocksolutions/factomd'
+
+const dockerBuild = factomdTag =>
+  execSync(
+    `docker build --build-arg FACTOMD_TAG=${factomdTag} -t ${TAG_PREFIX}:${factomdTag} -t ${TAG_PREFIX}:${factomdTag}-${version}`
+  )
+
+const dockerPush = factomdTag => {
+  execSync(`docker push ${TAG_PREFIX}:${factomdTag}`)
+  execSync(`docker push ${TAG_PREFIX}:${factomdTag}-${version}`)
+}
+
+factomdTags.forEach(factomdTag => {
+  dockerBuild(factomdTag)
+  dockerPush(factomdTag)
+})
