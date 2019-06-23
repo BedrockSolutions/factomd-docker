@@ -6,7 +6,7 @@
   "repository": "https://github.com/BedrockSolutions/factomd-docker",
   "scripts": {
     "build": "docker build --build-arg FACTOMD_TAG=v6.3.2 -t factomd:latest .",
-    "format": "prettier-standard 'src/**/*.js'",
+    "format": "prettier-standard './**/*.js'",
     "test": "(export DOCKER_TAG=latest; ava)",
     "prune": "docker system prune --volumes -all --force > /dev/null",
     "config": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest config",

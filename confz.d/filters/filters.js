@@ -22,13 +22,16 @@ const ms = require('ms')
 const DEFAULT_ARG_NAME = toLower
 const DEFAULT_OPT_NAME = upperFirst
 
-const networkOptValue = network => ['MAIN', 'LOCAL'].includes(network) ? network : 'CUSTOM'
+const networkOptValue = network =>
+  ['MAIN', 'LOCAL'].includes(network) ? network : 'CUSTOM'
 
-const isCustomNetwork = ({network}) => networkOptValue(network) === 'CUSTOM'
+const isCustomNetwork = ({ network }) => networkOptValue(network) === 'CUSTOM'
 
-const networkPrefixOptName = suffix => ({network}) => `${capitalize(networkOptValue(network))}${suffix}`
+const networkPrefixOptName = suffix => ({ network }) =>
+  `${capitalize(networkOptValue(network))}${suffix}`
 
-const durationToSecondsOptValue = value => isString(value) ? Math.trunc(ms(value) / 1000) : value
+const durationToSecondsOptValue = value =>
+  isString(value) ? Math.trunc(ms(value) / 1000) : value
 
 const notOptValue = value => !value
 
@@ -47,7 +50,7 @@ const overrides = {
     name: 'CustomBootstrapKey',
   },
   controlPanel: {
-    name: 'ControlPanelSetting'
+    name: 'ControlPanelSetting',
   },
   controlPanelName: {
     arg: true,
@@ -93,10 +96,10 @@ const overrides = {
     value: notOptValue,
   },
   oracleChain: {
-    name: 'ExchangeRateChainId'
+    name: 'ExchangeRateChainId',
   },
   oraclePublicKey: {
-    name: 'ExchangeRateAuthorityPublicKey'
+    name: 'ExchangeRateAuthorityPublicKey',
   },
   p2pDisable: {
     arg: true,
@@ -105,7 +108,10 @@ const overrides = {
   },
   p2pConnectionPolicy: {
     arg: true,
-    custom: (_, value) => value ? {exclusive: value === 'ACCEPT', exclusive_in: value === 'REFUSE'} : {}
+    custom: (_, value) =>
+      value
+        ? { exclusive: value === 'ACCEPT', exclusive_in: value === 'REFUSE' }
+        : {},
   },
   p2pFanout: {
     arg: true,
@@ -115,7 +121,7 @@ const overrides = {
     name: 'PeersFile',
   },
   p2pPort: {
-    name:  networkPrefixOptName('NetworkPort')
+    name: networkPrefixOptName('NetworkPort'),
   },
   p2pSeed: {
     name: networkPrefixOptName('SeedURL'),
@@ -126,7 +132,7 @@ const overrides = {
   p2pTimeout: {
     arg: true,
     name: 'deadline',
-    value: durationToSecondsOptValue
+    value: durationToSecondsOptValue,
   },
   pprofExpose: {
     arg: true,
@@ -146,11 +152,11 @@ const overrides = {
   },
   startDelay: {
     arg: true,
-    value: durationToSecondsOptValue
+    value: durationToSecondsOptValue,
   },
   webCORS: {
     joinToken: ', ',
-    name: 'CorsDomains'
+    name: 'CorsDomains',
   },
   webPassword: {
     name: 'FactomdRpcPass',
@@ -173,11 +179,11 @@ const overrides = {
   },
   webUsername: {
     name: 'FactomdRpcUser',
-  }
+  },
 }
 
 const getName = (key, values) => {
-  const {arg = false, name: overrideName} = overrides[key] || {}
+  const { arg = false, name: overrideName } = overrides[key] || {}
 
   if (overrideName) {
     return isFunction(overrideName) ? overrideName(values, key) : overrideName
@@ -187,14 +193,13 @@ const getName = (key, values) => {
 }
 
 const getValue = (key, value) => {
-  const {
-    arg = false,
-    joinToken = ' ',
-    value: overrideValue
-  } = overrides[key] || {}
+  const { arg = false, joinToken = ' ', value: overrideValue } =
+    overrides[key] || {}
 
   if (overrideValue) {
-    value = isFunction(overrideValue) ? overrideValue(value, key) : overrideValue
+    value = isFunction(overrideValue)
+      ? overrideValue(value, key)
+      : overrideValue
   }
 
   return `"${isArray(value) ? join(joinToken, value) : value}"`
@@ -213,7 +218,7 @@ const mergeValues = values => {
 }
 
 const createValueFilter = selectArgs => ([key]) => {
-  const {arg = false, squelched = false} = overrides[key] || {}
+  const { arg = false, squelched = false } = overrides[key] || {}
   return selectArgs === arg && !squelched
 }
 
@@ -227,11 +232,7 @@ const createAdaptKeyValuePair = values => keyValuePair => {
   return adaptor(key, value, values)
 }
 
-const sortObjectKeys = flow([
-  toPairs,
-  sortBy(0),
-  fromPairs,
-])
+const sortObjectKeys = flow([toPairs, sortBy(0), fromPairs])
 
 const adaptConfiguration = (values, selectArgs) => {
   const mergedValues = mergeValues(values)
@@ -247,4 +248,4 @@ const adaptConfiguration = (values, selectArgs) => {
   ])(mergedValues)
 }
 
-module.exports = {adaptConfiguration, isCustomNetwork}
+module.exports = { adaptConfiguration, isCustomNetwork }
