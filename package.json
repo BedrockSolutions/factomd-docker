@@ -6,9 +6,10 @@
   "repository": "https://github.com/BedrockSolutions/factomd-docker",
   "scripts": {
     "build": "docker build --build-arg FACTOMD_TAG=v6.3.2 -t factomd:latest .",
+    "format": "prettier-standard 'src/**/*.js'",
     "test": "(export DOCKER_TAG=latest; ava)",
+    "prune": "docker system prune --volumes -all --force > /dev/null",
     "config": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest config",
-    "prune": "docker container prune --force > /dev/null",
     "shell": "docker run -it -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest shell",
     "start": "docker run -p 8088:8088 -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:latest"
   },
@@ -21,6 +22,7 @@
     "ini": "^1.3.5",
     "js-yaml": "^3.13.1",
     "pify": "^4.0.1",
+    "prettier-standard": "^9.1.1",
     "rimraf": "^2.6.3"
   },
   "ava": {
