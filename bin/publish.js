@@ -7,14 +7,16 @@ const {
 
 const TAG_PREFIX = 'bedrocksolutions/factomd'
 
+const exec = cmd => console.log(execSync(cmd).toString())
+
 const dockerBuild = factomdTag =>
-  execSync(
-    `docker build --build-arg FACTOMD_TAG=${factomdTag} -t ${TAG_PREFIX}:${factomdTag} -t ${TAG_PREFIX}:${factomdTag}-${version}`
+  exec(
+    `docker build --build-arg FACTOMD_TAG=${factomdTag} -t ${TAG_PREFIX}:${factomdTag} -t ${TAG_PREFIX}:${factomdTag}-${version} .`
   )
 
 const dockerPush = factomdTag => {
-  execSync(`docker push ${TAG_PREFIX}:${factomdTag}`)
-  execSync(`docker push ${TAG_PREFIX}:${factomdTag}-${version}`)
+  exec(`docker push ${TAG_PREFIX}:${factomdTag}`)
+  exec(`docker push ${TAG_PREFIX}:${factomdTag}-${version}`)
 }
 
 factomdTags.forEach(factomdTag => {

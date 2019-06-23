@@ -29,14 +29,8 @@ The basename of the image is:
 bedrocksolutions/factomd
 ```
 
-The following tags are available:
-
-* `v6.3.2`
-* `v6.3.2-rc3`
-* `v6.3.1-rc1-anchors`
-* `v6.3.1`
-* `v6.3.1-rc2`
-* `v6.3.1-rc1`
+Please see https://cloud.docker.com/u/bedrocksolutions/repository/docker/bedrocksolutions/factomd
+for a list of all available tags.
 
 ## Volumes
 
