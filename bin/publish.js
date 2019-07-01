@@ -19,7 +19,9 @@ const dockerPush = factomdTag => {
   exec(`docker push ${TAG_PREFIX}:${factomdTag}-${version}`)
 }
 
-factomdTags.forEach(factomdTag => {
+const tagsToPublish = process.argv[2] ? [process.argv[2]] : factomdTags
+
+tagsToPublish.forEach(factomdTag => {
   dockerBuild(factomdTag)
   dockerPush(factomdTag)
 })

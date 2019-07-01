@@ -375,13 +375,13 @@ identityActivationHeight: 0
 roles:
   - TESTNET_AUTHORITY
 #  - cantaloupeIdentity
-#  - watermellonIdentity 
+#  - watermelonIdentity 
 roleDefinitions:
   cantaloupeIdentity:
     identityChain: 0cc8f0ed06079f800763f806cf180735da8f16adcad25e2efb541d2ed5bf0e19
     identityPrivateKey: 6284249f0b043e20eab4fa3d6e475e552b878414cee1a0d69d41a84912246a21
     identityPublicKey: a3ee2142374c0b3568a469a936898e489fbf24a18daa65d8ae551186c1288f44
-  watermellonIdentity:
+  watermelonIdentity:
     identityChain: e797706c2e59c15d341745d61937f51b885b16ec55a81cc2e43842d3dead8de6
     identityPrivateKey: d945cdd82b75f89502cc18e47afaa130eca56a7d29bff144fa0c2715773dbba1
     identityPublicKey: c2ee8f46785d8d73dc468cfea80246ba0949f75aea7451cd89d83af7bab1d629
@@ -393,9 +393,10 @@ should be edited and the appropriate identity role should be uncommented. For ex
 roles:
   - TESTNET_AUTHORITY
   - cantaloupeIdentity
-#  - watermellonIdentity 
+#  - watermelonIdentity 
 ```
-Do the same on the `watermellon-server` and start all three servers. The
+Do the same on the `watermelon-server` (but uncomment the 
+`watermelonIdentity`!) and start all three servers. The
 start command would look similar to the following:
 ```
 docker run \
@@ -417,7 +418,7 @@ identityActivationHeight: 12345
 roles:
   - TESTNET_AUTHORITY
 #  - cantaloupeIdentity
-#  - watermellonIdentity 
+#  - watermelonIdentity 
 ```
 The backup config should become:
 ```yaml
@@ -425,7 +426,7 @@ identityActivationHeight: 12345
 roles:
   - TESTNET_AUTHORITY
   - cantaloupeIdentity
-#  - watermellonIdentity 
+#  - watermelonIdentity 
 ```
 At block 12345 the identity will move from the leader to the backup.
 
