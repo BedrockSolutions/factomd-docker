@@ -16,7 +16,7 @@
     "run:test0": "docker run --name factomd -d -p 8088:8088 -p 8090:8090 -p 8108:8108 -v $(pwd)/testing/values:/app/config -v $(pwd)/testing/database:/app/database bedrocksolutions/factomd:FD-689_test0"
   },
   "dependencies": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.13",
     "ms": "^2.1.1"
   },
   "devDependencies": {
