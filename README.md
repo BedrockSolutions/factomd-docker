@@ -359,7 +359,7 @@ docker run \
   -p 8108:8108 -p 8090:8090
   -v factom_config:/app/config \
   -v factom_database:/app/database \
-  bedrocksolutions/factomd:v6.3.2
+  bedrocksolutions/factomd:{factomdVersion}
 ```
 
 ## Examples
@@ -404,7 +404,7 @@ docker run \
 -p 8110:8110 -p 8090:8090 \
 -v /path/to/config/dir:/app/config \
 -v /path/to/db/dir:/app/database
-bedrocksolutions/factomd:v6.3.2
+bedrocksolutions/factomd:{factomdVersion}
 ```
 
 #### Initiating the brain swap

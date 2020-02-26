@@ -1,6 +1,6 @@
 network: fct_community_test
 
-controlPanelName: Macbook Testnet Follower
+controlPanelName: Macbook Follower
 
 webTLSAddresses:
   - a.com
