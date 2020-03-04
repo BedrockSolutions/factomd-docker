@@ -357,7 +357,7 @@ similar to the following will do the job:
 docker run \
   --name factomd
   -p 8108:8108 -p 8090:8090
-  -v factom_config:/app/config \
+  -v factom_keys:/app/config \
   -v factom_database:/app/database \
   bedrocksolutions/factomd:{factomdVersion}
 ```
