@@ -20,19 +20,20 @@ This is a Docker image containing the Factom Protocol daemon.
 * [Commands](#commands)
 * [Schema and Validation](#schema-and-validation)
 * [Options](#options)
+* [Migrating from the Inc Image](#migrating-from-the-inc-image)
 * [Examples](#examples)
 
-## Image Name and Tags
+## <a name="image-name-and-tags"></a>Image Name and Tags
 
 The basename of the image is:
 ```
 bedrocksolutions/factomd
 ```
 
-Please see https://cloud.docker.com/u/bedrocksolutions/repository/docker/bedrocksolutions/factomd
+Please see https://hub.docker.com/r/bedrocksolutions/factomd
 for a list of all available tags.
 
-## Volumes
+## <a name="volumes"></a>Volumes
 
 The container expects two volumes to be mounted at startup:
 
@@ -45,7 +46,7 @@ The container expects two volumes to be mounted at startup:
    
 These volumes can be bind mounted or docker volumes can be used.
    
-## Configuration
+## <a name="configuration"></a>Configuration
 
 Configuration is stored in one or more YAML files and injected into the
 container under `/app/config`. Most deployments will simply put all 
@@ -76,7 +77,7 @@ for changes. When a change is detected, the new configuration will be
 validated and a fresh `start.sh` script and `factomd.conf` will be 
 generated as necessary.
 
-## The `network` Setting
+## <a name="the-network-setting"></a>The `network` Setting
 
 The `network` setting is special, and works differently from the `Network` setting in
 `factomd.conf`. It combines the functionality of the following factomd settings:
@@ -89,7 +90,7 @@ respectively. To enable a custom network, such as the testnet network, set
 `network` to the name of the custom network. For testnet, that would be
 `fct_community_test`.
 
-## Presets
+## <a name="presets"></a>Presets
 
 The purpose of a preset is to group settings together and give that group a name. There are
 two broad categories of presets:
@@ -230,7 +231,7 @@ roleDefinitions:
 ```
 because now the pieces are in place to do an easy brain swap.
 
-## Commands
+## <a name="commands"></a>Commands
 
 The container accepts several commands. These commands are passed to the
 container as the first and only command line argument. Example:
@@ -272,7 +273,7 @@ the YAML file syntax.
 
 For use when a shell into the container is desired.
 
-## Schema and Validation
+## <a name="schema-and-validation"></a>Schema and Validation
 
 All configuration passed to the container is validated against a rigorous
 schema. Validation failure during container start results in immediate
@@ -326,13 +327,13 @@ reference. Examples:
   * `/foo/bar.html`
   * `../foo.html`
 
-## Options
+## <a name="options"></a>Options
 
 Currently, the best way to learn about all of the options is to 
 [look at the schema](./confz.d/schema.yaml). Once things settle down, the various options
 will be fully documented here.
 
-## Migrating from the Inc Image
+## <a name="migrating-from-the-inc-image"></a>Migrating from the Inc Image
 
 The majority of administrators currently running factomd have followed the
 community's instructions and have created `factom_database` and `factom_keys`
@@ -362,7 +363,7 @@ docker run \
   bedrocksolutions/factomd:{factomdVersion}
 ```
 
-## Examples
+## <a name="examples"></a>Examples
 
 ### Brain swap
 
